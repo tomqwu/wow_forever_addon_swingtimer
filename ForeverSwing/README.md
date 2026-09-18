@@ -1,4 +1,4 @@
-# ForeverSwing 0.2.2
+# ForeverSwing 0.3.0
 
 A small, standalone melee swing-bar addon for World of Warcraft: Forever beta
 1.60.1 (69893). Main-hand countdown, optional off-hand countdown, movable frame,
@@ -78,7 +78,7 @@ Findings:
 
 ## Validation and limits
 
-- `luac -p` syntax validation passed for both Lua files.
+- `luac -p` syntax validation passed for all Lua files.
 - 56 local model/mock-client checks passed. They cover countdown math,
   invalid/secret payloads, ranged exclusion, main/off-hand separation,
   range semantics, expiry without free-running, equipment changes, demo
@@ -108,3 +108,32 @@ Findings:
 
 To remove, disable ForeverSwing in the AddOns list or remove only its folder
 while WoW is closed. No Blizzard UI files, other addons or game settings change.
+
+## Hunter range indicator
+
+Version 0.3.0 adds a hunter-only icon and yard bracket below the swing bars,
+enabled by default. `/fswing hunterrange off` hides it; `on` restores it.
+It shares the frame's position, scale, and out-of-combat fade.
+
+- Green: native shooting range.
+- Amber: native melee range.
+- Orange: too close to shoot, when spell checks can distinguish this.
+- Red: too far to shoot, when spell checks can distinguish this.
+- Gray: unknown/restricted range or no attackable target.
+
+Yards are approximate **spell-range brackets**, never exact measured distance.
+For example, learned spells may distinguish `<=5 yd`, `~5-8 yd`, `~8-35 yd`,
+and `>35 yd`; actual bounds come from the character's spellbook, not hardcoded
+Classic ranges. Available spells, talents, target combat reach, and client
+restrictions can make brackets wider or unavailable. A failed shot range check
+alone cannot distinguish too close from too far, so ambiguous results stay gray.
+Green indicates range only, not line of sight, facing, ammo, or ability readiness.
+
+The addon discovers learned spells with `C_SpellBook`, reads `C_Spell.GetSpellInfo`,
+and combines readable `C_Spell.IsSpellInRange` checks with native swing-range
+status. It refreshes every 0.15 seconds while enabled with an attackable living
+target, including before attacking. Target loss, death, disable, and leaving the
+world stop its updater. This does not add a ranged swing countdown.
+
+Hunter validation: `lua tests/test_hunterrange.lua` (19 model/mock-client checks).
+Live in-game hunter validation remains pending.

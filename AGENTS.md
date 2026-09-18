@@ -40,7 +40,9 @@ Documentation-only or tooling-only changes do not require an addon version bump.
 - Unlocking or previewing keeps the addon visible.
 - /fswing oocalpha 0 allows complete out-of-combat transparency.
 - Existing per-bar range dimming remains independent of parent-frame opacity.
-- Fade and swing update handlers must stop when idle; do not add idle polling.
+- Fade and swing update handlers must stop when idle. The hunter range indicator
+  may poll every 0.15s only while enabled with a living attackable target; stop
+  on target loss, death, disable, or leaving the world.
 
 ## CurseForge publishing
 
@@ -59,3 +61,7 @@ attack. Do not present the old 0.4-second catch window as a Forever requirement.
 Cues default off, are labeled as personal references, and must never imply that
 an Echo is ready or a twist succeeded. Version 0.2.2 migrates the old promoted
 0.4-second setting once; preserve explicit choices after that migration.
+
+Hunter range changes must run `lua tests/test_hunterrange.lua`. Yard labels are
+spell-derived brackets, not exact distance; do not hardcode Classic spell IDs or
+interpret a failed minimum-range spell check as always too far.

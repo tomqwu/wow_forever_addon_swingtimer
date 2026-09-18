@@ -2,7 +2,8 @@
 ## Title: ForeverSwing
 ## Notes: Native Forever melee swing bars. Optional personal timing cue; no combat-log dependency.
 ## Author: Codex
-## Version: 0.2.2
+## Version: 0.3.0
 ## SavedVariables: ForeverSwingDB
 Core.lua
+HunterRange.lua
 ForeverSwing.lua

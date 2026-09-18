@@ -37,7 +37,7 @@ personal reference afterward; `/fswing cue 0` disables it.
 
 ## Validation
 
-Lua syntax checks and 56 model/mock-client checks pass. Live in-game combat,
+Lua syntax checks and 75 model/mock-client checks pass. Live in-game combat,
 dungeon and PvP validation is still pending.
 
 Run from the repository root with Lua installed:
@@ -91,3 +91,32 @@ POSTs are never automatically retried. Do not change/delete a published release 
 Publisher tests: `python3 -m unittest discover -s tests -p 'test_curseforge.py'`.
 
 API reference: [CurseForge Upload API](https://support.curseforge.com/support/solutions/articles/9000197321).
+
+## Hunter range indicator
+
+Version 0.3.0 adds a hunter-only icon and yard bracket below the swing bars,
+enabled by default. `/fswing hunterrange off` hides it; `on` restores it.
+It shares the frame's position, scale, and out-of-combat fade.
+
+- Green: native shooting range.
+- Amber: native melee range.
+- Orange: too close to shoot, when spell checks can distinguish this.
+- Red: too far to shoot, when spell checks can distinguish this.
+- Gray: unknown/restricted range or no attackable target.
+
+Yards are approximate **spell-range brackets**, never exact measured distance.
+For example, learned spells may distinguish `<=5 yd`, `~5-8 yd`, `~8-35 yd`,
+and `>35 yd`; actual bounds come from the character's spellbook, not hardcoded
+Classic ranges. Available spells, talents, target combat reach, and client
+restrictions can make brackets wider or unavailable. A failed shot range check
+alone cannot distinguish too close from too far, so ambiguous results stay gray.
+Green indicates range only, not line of sight, facing, ammo, or ability readiness.
+
+The addon discovers learned spells with `C_SpellBook`, reads `C_Spell.GetSpellInfo`,
+and combines readable `C_Spell.IsSpellInRange` checks with native swing-range
+status. It refreshes every 0.15 seconds while enabled with an attackable living
+target, including before attacking. Target loss, death, disable, and leaving the
+world stop its updater. This does not add a ranged swing countdown.
+
+Hunter validation: `lua tests/test_hunterrange.lua` (19 model/mock-client checks).
+Live in-game hunter validation remains pending.

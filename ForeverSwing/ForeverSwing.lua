@@ -1,10 +1,11 @@
 local addon, NS = ...
 local Core = NS.Core
 local defaults = { x = 0, y = -160, width = 300, height = 24, scale = 1,
-    locked = true, offhand = false, cue = 0, oocalpha = 0.15 }
+    locked = true, offhand = false, cue = 0, oocalpha = 0.15, hunterrange = true }
 local db, host, bars, supported, reason, preview
 local inCombat, fader, opacity, fadeTarget = false, nil, 1, nil
 local eventCount = 0
+local hunterRange
 local mainHand, offHand
 local events = CreateFrame("Frame")
 local function Say(message)
@@ -91,6 +92,7 @@ local function Layout()
     end
     host.hint:SetText(db.locked and "" or "Drag to move  |  /fswing lock")
     UpdateOpacity()
+    if hunterRange then hunterRange.Refresh() end
 end
 local function NewBar(label)
     local fill = CreateFrame("StatusBar", nil, host)
@@ -203,6 +205,7 @@ local function Initialize()
     host.hint:SetPoint("BOTTOM", host, "TOP", 0, 5)
     bars = { NewBar("Main hand"), NewBar("Off hand") }
     fader = CreateFrame("Frame", nil, host)
+    if NS.HunterRange and UnitClass then hunterRange = NS.HunterRange.Create(host, db) end
     ReadCombatState()
     UpdateOpacity(true)
     Layout()
@@ -284,6 +287,9 @@ SlashCmdList.FOREVERSWING = function(message)
     local command, arg = message:lower():match("^%s*(%S*)%s*(.-)%s*$")
     if command == "unlock" then db.locked = false; Layout()
     elseif command == "lock" then db.locked = true; Layout()
+    elseif command == "hunterrange" then
+        if arg ~= "on" and arg ~= "off" then Say("Use /fswing hunterrange on|off"); return end
+        db.hunterrange = arg == "on"; Layout()
     elseif command == "offhand" then
         if arg ~= "on" and arg ~= "off" then Say("Use /fswing offhand on|off"); return end
         db.offhand = arg == "on"; Clear("Waiting for swing"); Layout()
@@ -308,12 +314,13 @@ SlashCmdList.FOREVERSWING = function(message)
         Clear("Waiting for swing"); Layout()
     elseif command == "status" then
         local version, build, _, interface = GetBuildInfo()
-        Say("v0.2.2 | client " .. tostring(version) .. " build " .. tostring(build) .. " interface " .. tostring(interface))
+        Say("v0.3.0 | client " .. tostring(version) .. " build " .. tostring(build) .. " interface " .. tostring(interface))
         Say("Native event: " .. (supported and "registered" or "unavailable") .. "; melee events: " .. eventCount)
         Say("Cue: " .. db.cue .. "s" .. (db.cue == 0 and " (off; recommended for Forever)" or " (custom reference)"))
         Say(reason or "No API restriction observed. Live combat validation still requires actual swings.")
     else
         Say("/fswing unlock | lock | test | reset | status")
+        Say("/fswing hunterrange on|off")
         Say("/fswing offhand on|off | cue 0..3 | width 120..800 | scale 0.5..2 | oocalpha 0..1")
         Say("Cues default OFF. Twist of Light uses a next-attack Echo; no 0.4s catch required.")
     end
