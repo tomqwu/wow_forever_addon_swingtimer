@@ -1,5 +1,7 @@
 # ForeverSwing
 
+<img src="assets/ForeverSwing-CurseForge.png" alt="ForeverSwing icon" width="160">
+
 A lightweight melee swing timer for **World of Warcraft: Forever beta 1.60.1 (69893)**.
 Uses the native `PLAYER_SWING` event rather than combat-log parsing.
 
