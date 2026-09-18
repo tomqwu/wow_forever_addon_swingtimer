@@ -52,3 +52,11 @@ from `ForeverSwing.toc`. Existing releases are never overwritten; bump the versi
 before the next fix or feature. The workflow can also be run manually.
 
 To package locally: `python3 scripts/package.py`.
+
+## Development workflow
+
+Every addon fix or feature follows the delivery cycle in [AGENTS.md](AGENTS.md):
+implement and test, bump the version, build the ZIP, install and verify the local
+copy when available, push, and verify the GitHub release and asset. Completion
+notes include the release link and the required reload/setup commands. Simulated
+tests and in-game testing are reported separately.
