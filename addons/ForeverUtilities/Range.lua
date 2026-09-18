@@ -148,6 +148,9 @@ function Range.Create(host, db)
         local yards=Range.ReadDistance('target')
         if Call(UnitCanAttack,'player','target')~=true then
             local state,text=Range.WithDistance('unknown','Range unavailable',yards)
+            if yards==nil and Call(UnitIsFriend,'player','target')==true then
+                text='Friendly target\nDistance unavailable'
+            end
             lastStatus='Numeric distance: '..(yards and 'available' or 'unavailable')..'; '..text
             Paint(state,text); return
         end

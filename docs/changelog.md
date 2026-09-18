@@ -1,3 +1,11 @@
+## 0.3.1
+
+- Friendly targets without a usable distance reading now show “Friendly target — Distance unavailable” in neutral gray.
+- The message uses two lines so it fits the indicator without shrinking the text.
+- Available friendly-target distance readings continue to display normally.
+
+Use `/reload` to apply the update.
+
 ## 0.3.0
 
 - Shows a live decimal yard reading when the client provides a validated numeric target distance.

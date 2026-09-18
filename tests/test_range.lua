@@ -140,6 +140,14 @@ UnitCanAttack=function() return false end
 UnitDistanceSquared=function() return 144,true end
 f.Refresh()
 check(f.label.text=='Distance | 12.0 yd','friendly target numeric distance supported')
+UnitIsFriend=function() return true end
+UnitDistanceSquared=function() return 0,false end
+f.Refresh()
+check(f.label.text=='Friendly target\nDistance unavailable','friendly unavailable message is explicit')
+check(f.textures[2].color[1]==0.8,'friendly unavailable remains neutral gray')
+UnitIsFriend=function() return secret end
+f.Refresh()
+check(f.label.text=='Range unavailable','restricted friendliness does not invent friendly status')
 UnitCanAttack=function() return true end
 UnitDistanceSquared=nil
 class='HUNTER';C_Spell=nil;C_SpellBook=nil

@@ -2,7 +2,7 @@
 ## Title: Forever Utilities
 ## Notes: Lightweight Forever utilities: target distance brackets and a colored range icon.
 ## Author: Codex
-## Version: 0.3.0
+## Version: 0.3.1
 ## SavedVariables: ForeverUtilitiesDB
 Core.lua
 Range.lua
