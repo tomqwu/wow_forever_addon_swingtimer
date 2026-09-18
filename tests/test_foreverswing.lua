@@ -49,6 +49,7 @@ local function run(blocked)
     UIParent = object()
     DEFAULT_CHAT_FRAME = {AddMessage=function() end}
     GetTime = function() return clock end
+    UnitAffectingCombat = function() return false end
     GetBuildInfo = function() return '1.60.1', '69893', '', 16001 end
     Enum = {PlayerSwingType={MainHand=0, OffHand=1, Ranged=2}}
     C_SwingTimer = {IsTargetWithinSwingRange=function() return range end}
@@ -66,6 +67,30 @@ local function run(blocked)
         SlashCmdList.FOREVERSWING('status')
         return
     end
+    local fader = frames[5]
+    check(host.alpha == 0.15, 'starts dimmed outside combat')
+    event('PLAYER_REGEN_DISABLED')
+    check(host.alpha == 1, 'combat restores visibility immediately')
+    event('PLAYER_REGEN_ENABLED')
+    fader.scripts.OnUpdate(fader, 0.175)
+    check(host.alpha < 1 and host.alpha > 0.15, 'smooth intermediate fade')
+    event('PLAYER_REGEN_DISABLED')
+    check(host.alpha == 1 and fader.scripts.OnUpdate == nil, 'combat interrupts fade')
+    event('PLAYER_REGEN_ENABLED')
+    fader.scripts.OnUpdate(fader, 0.35)
+    check(math.abs(host.alpha - 0.15) < 0.001 and fader.scripts.OnUpdate == nil, 'fade stops at idle opacity')
+    SlashCmdList.FOREVERSWING('unlock')
+    check(host.alpha == 1, 'unlock restores visibility')
+    SlashCmdList.FOREVERSWING('lock')
+    fader.scripts.OnUpdate(fader, 0.35)
+    SlashCmdList.FOREVERSWING('test')
+    check(host.alpha == 1, 'preview restores visibility')
+    event('PLAYER_REGEN_ENABLED')
+    SlashCmdList.FOREVERSWING('oocalpha 0')
+    fader.scripts.OnUpdate(fader, 0.35)
+    check(host.alpha == 0, 'optional fully transparent idle')
+    SlashCmdList.FOREVERSWING('oocalpha 0.15')
+    fader.scripts.OnUpdate(fader, 0.35)
     check(eventFrame.events.PLAYER_SWING, 'native event registered')
     check(not eventFrame.events.COMBAT_LOG_EVENT_UNFILTERED, 'no combat log')
     event('PLAYER_SWING', 3.6, 2)

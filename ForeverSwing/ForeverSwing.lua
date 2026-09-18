@@ -1,8 +1,9 @@
 local addon, NS = ...
 local Core = NS.Core
 local defaults = { x = 0, y = -160, width = 300, height = 24, scale = 1,
-    locked = true, offhand = false, cue = 0.4 }
+    locked = true, offhand = false, cue = 0.4, oocalpha = 0.15 }
 local db, host, bars, supported, reason, preview
+local inCombat, fader, opacity, fadeTarget = false, nil, 1, nil
 local eventCount = 0
 local mainHand, offHand
 local events = CreateFrame("Frame")
@@ -25,6 +26,39 @@ local function Normalize()
     db.height = Number(db.height, 24, 16, 60)
     db.scale = Number(db.scale, 1, 0.5, 2)
     db.cue = Number(db.cue, 0.4, 0, 3)
+    db.oocalpha = Number(db.oocalpha, 0.15, 0, 1)
+end
+-- Separate fade updates from swing updates so leaving combat can clear timing
+-- without interrupting the fade. The updater stops once its target is reached.
+local function UpdateOpacity(immediate)
+    if not fader then return end
+    local target = (inCombat or preview or not db.locked) and 1 or db.oocalpha
+    if immediate or target == 1 then
+        fader:SetScript("OnUpdate", nil)
+        fadeTarget, opacity = nil, target
+        host:SetAlpha(opacity)
+        return
+    end
+    if fadeTarget == target then return end
+    fader:SetScript("OnUpdate", nil)
+    fadeTarget = nil
+    if opacity == target then return end
+    local start, elapsed = opacity, 0
+    fadeTarget = target
+    fader:SetScript("OnUpdate", function(self, delta)
+        elapsed = math.min(0.35, elapsed + delta)
+        opacity = start + (target - start) * (elapsed / 0.35)
+        host:SetAlpha(opacity)
+        if elapsed >= 0.35 then
+            fadeTarget = nil
+            self:SetScript("OnUpdate", nil)
+        end
+    end)
+end
+local function ReadCombatState()
+    local ok, value = pcall(UnitAffectingCombat, "player")
+    -- If the client restricts this query, stay visible until a combat-end event.
+    inCombat = not ok or not Core.IsReadable(value) or value == true
 end
 local function Idle(bar, text)
     bar.state = {}
@@ -47,6 +81,7 @@ local function Layout()
         bar.fill:SetShown(i == 1 or db.offhand)
     end
     host.hint:SetText(db.locked and "" or "Drag to move  |  /fswing lock")
+    UpdateOpacity()
 end
 local function NewBar(label)
     local fill = CreateFrame("StatusBar", nil, host)
@@ -72,6 +107,7 @@ end
 local function Clear(text)
     if not bars then return end
     preview = false
+    UpdateOpacity()
     for _, bar in ipairs(bars) do Idle(bar, text) end
     host:SetScript("OnUpdate", nil)
 end
@@ -104,6 +140,7 @@ local function Render()
     end
     if not active then
         preview = false
+        UpdateOpacity()
         host:SetScript("OnUpdate", nil)
     end
 end
@@ -148,6 +185,9 @@ local function Initialize()
     host.hint = host:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     host.hint:SetPoint("BOTTOM", host, "TOP", 0, 5)
     bars = { NewBar("Main hand"), NewBar("Off hand") }
+    fader = CreateFrame("Frame", nil, host)
+    ReadCombatState()
+    UpdateOpacity(true)
     Layout()
     local types = Enum and Enum.PlayerSwingType
     if types and C_SwingTimer then
@@ -168,6 +208,7 @@ local function Initialize()
     events:RegisterEvent("PLAYER_LEAVING_WORLD")
     events:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
     events:RegisterEvent("PLAYER_REGEN_ENABLED")
+    events:RegisterEvent("PLAYER_REGEN_DISABLED")
     -- Range queries are throttled during active timers; no shared range subscription is changed.
     local elapsed = 0
     local original = Render
@@ -197,6 +238,17 @@ events:SetScript("OnEvent", function(_, event, ...)
         reason = nil
         Start(kind == mainHand and 1 or 2, duration)
         UpdateRange()
+    elseif event == "PLAYER_REGEN_DISABLED" then
+        inCombat = true
+        UpdateOpacity()
+    elseif event == "PLAYER_REGEN_ENABLED" then
+        inCombat = false
+        Clear("Waiting for swing")
+    elseif event == "PLAYER_ENTERING_WORLD" then
+        ReadCombatState()
+        Clear("Waiting for swing")
+        UpdateOpacity(true)
+        UpdateRange()
     elseif event == "PLAYER_TARGET_CHANGED" then
         UpdateRange()
     elseif event == "PLAYER_EQUIPMENT_CHANGED" then
@@ -218,18 +270,19 @@ SlashCmdList.FOREVERSWING = function(message)
     elseif command == "offhand" then
         if arg ~= "on" and arg ~= "off" then Say("Use /fswing offhand on|off"); return end
         db.offhand = arg == "on"; Clear("Waiting for swing"); Layout()
-    elseif command == "cue" or command == "width" or command == "scale" then
+    elseif command == "cue" or command == "width" or command == "scale" or command == "oocalpha" then
         local value = tonumber(arg)
         local low, high = 0, 3
         if command == "width" then low, high = 120, 800
-        elseif command == "scale" then low, high = 0.5, 2 end
+        elseif command == "scale" then low, high = 0.5, 2
+        elseif command == "oocalpha" then low, high = 0, 1 end
         if not Core.IsNumber(value) or value < low or value > high then
             Say(command .. " must be between " .. low .. " and " .. high); return
         end
         db[command] = value; Layout()
         if command == "cue" then Say("Personal cue: " .. value .. "s. Not a verified seal-twist window.") end
     elseif command == "test" then
-        Clear(); preview = true
+        Clear(); preview = true; UpdateOpacity()
         Start(1, 3.6)
         if db.offhand then Start(2, 2.4) end
         Say("One-cycle DEMO; real melee events replace it.")
@@ -238,12 +291,12 @@ SlashCmdList.FOREVERSWING = function(message)
         Clear("Waiting for swing"); Layout()
     elseif command == "status" then
         local version, build, _, interface = GetBuildInfo()
-        Say("v0.1.1 | client " .. tostring(version) .. " build " .. tostring(build) .. " interface " .. tostring(interface))
+        Say("v0.2.0 | client " .. tostring(version) .. " build " .. tostring(build) .. " interface " .. tostring(interface))
         Say("Native event: " .. (supported and "registered" or "unavailable") .. "; melee events: " .. eventCount)
         Say(reason or "No API restriction observed. Live combat validation still requires actual swings.")
     else
         Say("/fswing unlock | lock | test | reset | status")
-        Say("/fswing offhand on|off | cue 0..3 | width 120..800 | scale 0.5..2")
+        Say("/fswing offhand on|off | cue 0..3 | width 120..800 | scale 0.5..2 | oocalpha 0..1")
         Say("Cue defaults to 0.4s. It is a personal marker, not a seal/proc detector.")
     end
 end

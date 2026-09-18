@@ -1,4 +1,4 @@
-# ForeverSwing 0.1.1
+# ForeverSwing 0.2.0
 
 A small, standalone melee swing-bar addon for World of Warcraft: Forever beta
 1.60.1 (69893). Main-hand countdown, optional off-hand countdown, movable frame,
@@ -12,9 +12,14 @@ Install the `ForeverSwing` folder under:
 Fully restart WoW after the first installation so the new addon is discovered.
 Enable ForeverSwing in the character-selection AddOns list. The bar initially
 says “Waiting for swing”; attack a hostile target to start the native timer.
+Outside combat, the bar fades to 15% opacity over 0.35 seconds. Entering combat,
+unlocking or previewing restores full visibility immediately. Existing range
+dimming still applies to the individual bars.
+
 The bar fills left to right while the number counts down. A completed timer
 returns to Ready; it does not pretend another swing happened.
 
+- `/fswing oocalpha 0.15` — out-of-combat opacity (default 15%); use `0` to hide completely.
 - `/fswing unlock` — drag the bar.
 - `/fswing lock` — lock the position and let mouse clicks pass through.
 - `/fswing test` — one explicitly labeled demo cycle, replaced by real swings.
@@ -67,7 +72,7 @@ Findings:
 ## Validation and limits
 
 - `luac -p` syntax validation passed for both Lua files.
-- 39 local model/mock-client checks passed. They cover countdown math,
+- 47 local model/mock-client checks passed. They cover countdown math,
   invalid/secret payloads, ranged exclusion, main/off-hand separation,
   range semantics, expiry without free-running, equipment changes, demo
   replacement, saved-setting validation, and blocked event registration.

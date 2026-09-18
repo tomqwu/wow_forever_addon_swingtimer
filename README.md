@@ -5,6 +5,8 @@ Uses the native `PLAYER_SWING` event rather than combat-log parsing.
 
 - Main-hand countdown and optional off-hand bar
 - Movable, resizable frame with saved settings
+- Smooth fade to 15% opacity outside combat; immediate visibility in combat
+- `/fswing oocalpha 0` for fully hidden bars outside combat
 - Out-of-range dimming, a 0.4-second reference line and shaded end-of-swing area
 - Guards unavailable APIs and restricted values
 - No external addon dependencies
@@ -30,7 +32,7 @@ abilities. `/fswing cue 0.4` enables the reference marker (default for new insta
 
 ## Validation
 
-Lua syntax checks and 39 model/mock-client checks pass. Live in-game combat,
+Lua syntax checks and 47 model/mock-client checks pass. Live in-game combat,
 dungeon and PvP validation is still pending.
 
 Run from the repository root with Lua installed:
