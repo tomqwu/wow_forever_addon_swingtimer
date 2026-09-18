@@ -52,6 +52,7 @@ local frames={}
 local methods={}
 function methods:SetScript(k,v) self.scripts[k]=v end
 function methods:RegisterEvent(e) self.events[e]=true end
+function methods:UnregisterEvent(e) self.events[e]=nil end
 function methods:CreateTexture()
  local texture=setmetatable({}, {__index=methods})
  self.textures=rawget(self,"textures") or {};table.insert(self.textures,texture);return texture
@@ -97,8 +98,13 @@ target=true;dead=true;f.Refresh()
 check(not f.scripts.OnUpdate,'dead target stops polling')
 dead=false;db.enabled=false;f.Refresh()
 check(not f.shown and not f.scripts.OnUpdate,'disabled stops polling')
+check(next(f.events)==nil,'disabled unregisters all range events')
+local disabledText=f.label.text
+f.scripts.OnEvent(f,'SPELLS_CHANGED')
+check(f.label.text==disabledText and not f.scripts.OnUpdate,'disabled ignores queued events')
 db.enabled=true;f.Refresh()
 check(f.shown and f.scripts.OnUpdate,'enable starts polling')
+check(f.events.PLAYER_TARGET_CHANGED and f.events.SPELLS_CHANGED,'enable restores events')
 f.scripts.OnEvent(f,'PLAYER_LEAVING_WORLD')
 check(not f.scripts.OnUpdate,'loading screen stops polling')
 class='PALADIN';check(NS.Range.Create({},db)~=nil,'distance utility supports other classes')

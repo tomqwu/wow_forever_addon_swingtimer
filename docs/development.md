@@ -66,3 +66,17 @@ An unbounded result such as `>100 yd` is red and labeled **Out of range**
 (beyond the checked spell range). Bounded distance estimates remain blue when
 attack-range classification is unavailable. This does not imply every ability
 is out of range.
+
+## Runtime modules
+
+TOC order is Core.lua, Modules.lua, Range.lua, Distance.lua, UI.lua. Register future
+modules after Modules.lua and before UI.lua using NS.Modules.Register with a stable
+id, display name, description, defaults (including enabled), optional normalize,
+options, and create(settings). Create returns an instance with Apply() and optional
+Status(). Apply must honor settings.enabled and release all background work when
+false. The toolbox builds rows and controls from registrations. Supported options
+are toggle and number (min/max/step). Add feature-specific tests to addons.json.
+
+Settings live under ForeverUtilitiesDB.modules.<id>. Never share one module's
+settings table, frame, or update loop with another. Modules.Reset(id) resets only
+that feature. The distance migration runs once and preserves old settings.

@@ -173,10 +173,21 @@ function Range.Create(host, db)
             ..'; native melee/ranged: '..tostring(melee)..'/'..tostring(ranged)..'; '..text
         Paint(state,text)
     end
+    local active=false
+    local rangeEvents={'PLAYER_TARGET_CHANGED','SPELLS_CHANGED','PLAYER_ENTERING_WORLD',
+        'PLAYER_LEAVING_WORLD','PLAYER_DEAD','PLAYER_EQUIPMENT_CHANGED','UNIT_FLAGS'}
     local function Refresh()
         frame:SetScript('OnUpdate',nil)
         frame:SetShown(db.enabled)
-        if not db.enabled then return end
+        if not db.enabled then
+            if active then for _,event in ipairs(rangeEvents) do frame:UnregisterEvent(event) end end
+            active=false;lastStatus='Distance checker disabled'
+            return
+        end
+        if not active then
+            for _,event in ipairs(rangeEvents) do frame:RegisterEvent(event) end
+            active=true;Discover()
+        end
         local hasTarget=Call(UnitExists,'target')==true
         frame:SetAlpha((hasTarget or db.locked==false) and 1 or 0.2)
         if not hasTarget then Paint('unknown','No target'); return end
@@ -193,6 +204,7 @@ function Range.Create(host, db)
         end)
     end
     frame:SetScript('OnEvent',function(_,event,unit)
+        if not db.enabled then return end
         if event=='UNIT_FLAGS' and (not Core.IsReadable(unit) or unit~='target') then return end
         if event=='PLAYER_LEAVING_WORLD' or event=='PLAYER_DEAD' then
             frame:SetScript('OnUpdate',nil); Paint('unknown','Range inactive'); return
@@ -200,10 +212,8 @@ function Range.Create(host, db)
         if event=='SPELLS_CHANGED' or event=='PLAYER_ENTERING_WORLD' or event=='PLAYER_EQUIPMENT_CHANGED' then Discover() end
         Refresh()
     end)
-    for _,event in ipairs({'PLAYER_TARGET_CHANGED','SPELLS_CHANGED','PLAYER_ENTERING_WORLD',
-        'PLAYER_LEAVING_WORLD','PLAYER_DEAD','PLAYER_EQUIPMENT_CHANGED','UNIT_FLAGS'}) do frame:RegisterEvent(event) end
     frame.Status=function() return lastStatus end
     frame.Refresh=Refresh
-    Discover(); Refresh()
+    Refresh()
     return frame
 end

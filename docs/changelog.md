@@ -1,3 +1,13 @@
+## 0.4.0
+
+- Added the shared utilities toolbox: open `/futils` to select and configure features.
+- Distance Checker is now an independent module with its own enabled state, position lock, size controls, and reset button.
+- Existing distance preferences migrate automatically into per-module settings.
+- Disabled modules are not constructed at login. Disabling Distance Checker stops its updates and removes its event listeners.
+- Existing `/futils unlock`, `lock`, `on`, `off`, `scale`, and `reset` commands remain available as distance shortcuts.
+
+Use `/reload`, then `/futils` to open the toolbox. Only Distance Checker is included in this release; the module structure supports future utilities.
+
 ## 0.3.1
 
 - Friendly targets without a usable distance reading now show “Friendly target — Distance unavailable” in neutral gray.

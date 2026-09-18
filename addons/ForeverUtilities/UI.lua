@@ -1,77 +1,138 @@
 local addon, NS = ...
-local Core = NS.Core
-local defaults = {x=0, y=-210, scale=1, locked=true, enabled=true}
-local db, host, indicator
-local events = CreateFrame('Frame')
-local function Say(text)
-    DEFAULT_CHAT_FRAME:AddMessage('|cff66ff88ForeverUtilities:|r '..text)
+local Modules=NS.Modules
+local events=CreateFrame('Frame')
+local panel, selected
+local function Say(text) DEFAULT_CHAT_FRAME:AddMessage('|cff66ff88ForeverUtilities:|r '..text) end
+local function Text(parent,text,x,y,font)
+    local label=parent:CreateFontString(nil,'OVERLAY',font or 'GameFontHighlight')
+    label:SetPoint('TOPLEFT',parent,'TOPLEFT',x,y);label:SetText(text)
+    return label
 end
-local function Normalize()
-    if type(ForeverUtilitiesDB)~='table' then ForeverUtilitiesDB={} end
-    db=ForeverUtilitiesDB
-    for key,value in pairs(defaults) do
-        if type(db[key])~=type(value) then db[key]=value end
+local function Button(parent,text,x,y,width,callback)
+    local button=CreateFrame('Button',nil,parent,'UIPanelButtonTemplate')
+    button:SetSize(width,26);button:SetPoint('TOPLEFT',parent,'TOPLEFT',x,y)
+    button:SetText(text);button:SetScript('OnClick',callback)
+    return button
+end
+local function Check(parent,label,x,y,callback)
+    local check=CreateFrame('CheckButton',nil,parent,'UICheckButtonTemplate')
+    check:SetSize(28,28);check:SetPoint('TOPLEFT',parent,'TOPLEFT',x,y)
+    Text(parent,label,x+34,y-6)
+    check:SetScript('OnClick',function(self) callback(self:GetChecked()==true) end)
+    return check
+end
+local function RefreshPanel()
+    if not panel then return end
+    for _,definition in ipairs(Modules.list) do
+        local enabled=Modules.Settings(definition.id).enabled
+        panel.rows[definition.id]:SetText((selected==definition.id and '> ' or '')..definition.name..(enabled and ' [On]' or ' [Off]'))
+        local section=panel.sections[definition.id]
+        if section then
+            section:SetShown(selected==definition.id)
+            section.enabled:SetChecked(enabled)
+            section.state:SetText(enabled and 'Enabled' or 'Disabled — no background updates')
+            for _,option in ipairs(definition.options or {}) do
+                local control=section.controls[option.key]
+                local value=Modules.Settings(definition.id)[option.key]
+                if option.kind=='toggle' then control:SetChecked(value)
+                else control:SetText(string.format('%.1fx',value)) end
+            end
+        end
     end
-    for _,key in ipairs({'x','y','scale'}) do
-        if not Core.IsNumber(db[key]) then db[key]=defaults[key] end
+end
+local function Select(id)
+    selected=id;Modules.db.selectedModule=id
+    if not panel.sections[id] then
+        local definition=Modules.definitions[id]
+        local section=CreateFrame('Frame',nil,panel)
+        section:SetPoint('TOPLEFT',panel,'TOPLEFT',235,-62);section:SetSize(340,310)
+        section.controls={};panel.sections[id]=section
+        Text(section,definition.name,0,0,'GameFontNormalLarge')
+        local description=Text(section,definition.description,0,-32)
+        description:SetWidth(320);description:SetJustifyH('LEFT')
+        section.enabled=Check(section,'Enable this utility',0,-94,function(value) Modules.SetEnabled(id,value) end)
+        section.state=Text(section,'',0,-128,'GameFontHighlightSmall')
+        local y=-158
+        for _,option in ipairs(definition.options or {}) do
+            local key=option.key
+            if option.kind=='toggle' then
+                section.controls[key]=Check(section,option.label,0,y,function(value)
+                    Modules.Settings(id)[key]=value;Modules.Apply(id)
+                end)
+            elseif option.kind=='number' then
+                Text(section,option.label,0,y-6)
+                section.controls[key]=Text(section,'',210,y-6)
+                local function Adjust(delta)
+                    local settings=Modules.Settings(id)
+                    settings[key]=math.max(option.min,math.min(option.max,settings[key]+delta))
+                    Modules.Apply(id)
+                end
+                Button(section,'-',170,y,28,function() Adjust(-option.step) end)
+                Button(section,'+',275,y,28,function() Adjust(option.step) end)
+            end
+            y=y-42
+        end
+        Button(section,'Reset this utility',0,y,170,function() Modules.Reset(id) end)
     end
-    db.x=math.max(-5000,math.min(5000,db.x))
-    db.y=math.max(-5000,math.min(5000,db.y))
-    db.scale=math.max(0.5,math.min(2,db.scale))
+    RefreshPanel()
 end
-local function Layout()
-    if not host then return end
-    host:SetScale(db.scale)
-    host:ClearAllPoints()
-    host:SetPoint('CENTER',UIParent,'CENTER',db.x,db.y)
-    host:EnableMouse(not db.locked)
-    host.hint:SetText(db.locked and '' or 'Drag to move | /futils lock')
-    indicator.Refresh()
+local function OpenPanel()
+    if not panel then
+        panel=CreateFrame('Frame','ForeverUtilitiesToolbox',UIParent)
+        panel:SetSize(600,400);panel:SetPoint('CENTER');panel:SetFrameStrata('DIALOG')
+        panel:SetClampedToScreen(true);panel:EnableMouse(true)
+        local bg=panel:CreateTexture(nil,'BACKGROUND');bg:SetAllPoints();bg:SetColorTexture(0.025,0.03,0.045,0.98)
+        Text(panel,'Forever Utilities',20,-18,'GameFontNormalLarge')
+        Text(panel,'Choose the utilities you want to use.',20,-43,'GameFontHighlightSmall')
+        Button(panel,'Close',510,-14,70,function() panel:Hide() end)
+        panel.rows={};panel.sections={}
+        local scroll=CreateFrame('ScrollFrame',nil,panel)
+        scroll:SetPoint('TOPLEFT',panel,'TOPLEFT',15,-70);scroll:SetSize(205,270)
+        local list=CreateFrame('Frame',nil,scroll);list:SetSize(205,math.max(270,#Modules.list*36))
+        scroll:SetScrollChild(list);scroll:EnableMouseWheel(true)
+        local offset=0
+        scroll:SetScript('OnMouseWheel',function(self,delta)
+            offset=math.max(0,math.min(math.max(0,#Modules.list*36-270),offset-delta*36))
+            self:SetVerticalScroll(offset)
+        end)
+        for i,definition in ipairs(Modules.list) do
+            local id=definition.id
+            panel.rows[id]=Button(list,definition.name,0,-(i-1)*36,200,function() Select(id) end)
+        end
+        Text(panel,'v0.4.0  |  Settings are saved per utility.',20,-372,'GameFontHighlightSmall')
+        if UISpecialFrames then table.insert(UISpecialFrames,'ForeverUtilitiesToolbox') end
+    end
+    panel:Show();Select(Modules.db.selectedModule)
 end
-local function Initialize()
-    Normalize()
-    host=CreateFrame('Frame','ForeverUtilitiesFrame',UIParent)
-    host:SetSize(400,56)
-    host:SetFrameStrata('MEDIUM')
-    host:SetMovable(true)
-    host:SetClampedToScreen(true)
-    host:RegisterForDrag('LeftButton')
-    host:SetScript('OnDragStart',function(self) if not db.locked then self:StartMoving() end end)
-    host:SetScript('OnDragStop',function(self)
-        self:StopMovingOrSizing()
-        local x,y=self:GetCenter()
-        local cx,cy=UIParent:GetCenter()
-        local ratio=self:GetEffectiveScale()/UIParent:GetEffectiveScale()
-        db.x,db.y=x-cx/ratio,y-cy/ratio
-        Layout()
-    end)
-    host.hint=host:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall')
-    host.hint:SetPoint('BOTTOM',host,'TOP',0,4)
-    indicator=NS.Range.Create(host,db)
-    Layout()
-    Say('Loaded. /futils unlock to move; /futils for options.')
-end
+Modules.changed=RefreshPanel
 events:RegisterEvent('ADDON_LOADED')
 events:SetScript('OnEvent',function(self,_,name)
-    if name==addon then Initialize();self:UnregisterEvent('ADDON_LOADED') end
+    if name~=addon then return end
+    if type(ForeverUtilitiesDB)~='table' then ForeverUtilitiesDB={} end
+    Modules.Initialize(ForeverUtilitiesDB)
+    self:UnregisterEvent('ADDON_LOADED')
+    Say('Loaded. /futils opens your utilities toolbox.')
 end)
 SLASH_FOREVERUTILITIES1='/futils'
 SlashCmdList.FOREVERUTILITIES=function(message)
-    if not db then return end
+    if not Modules.db then return end
     local command,arg=message:lower():match('^%s*(%S*)%s*(.-)%s*$')
-    if command=='unlock' then db.locked=false;db.enabled=true;Layout()
-    elseif command=='lock' then db.locked=true;Layout()
-    elseif command=='on' or command=='off' then db.enabled=command=='on';Layout()
+    local db=Modules.Settings('distance')
+    if command=='' or command=='options' or command=='tools' then OpenPanel()
+    elseif command=='unlock' then db.locked=false;Modules.SetEnabled('distance',true)
+    elseif command=='lock' then db.locked=true;Modules.Apply('distance')
+    elseif command=='on' or command=='off' then Modules.SetEnabled('distance',command=='on')
     elseif command=='scale' then
-        local n=tonumber(arg)
-        if not Core.IsNumber(n) or n<0.5 or n>2 then Say('Scale must be 0.5 to 2.');return end
-        db.scale=n;Layout()
-    elseif command=='reset' then
-        for key,value in pairs(defaults) do db[key]=value end
-        Layout()
+        local value=tonumber(arg)
+        if not NS.Core.IsNumber(value) or value<0.5 or value>2 then Say('Scale must be 0.5 to 2.');return end
+        db.scale=value;Modules.Apply('distance')
+    elseif command=='reset' then Modules.Reset('distance')
     elseif command=='status' then
-        Say('v0.3.1 | '..(host and (db.enabled and 'enabled' or 'disabled') or 'unavailable'))
-        if indicator and indicator.Status then Say(indicator.Status()) end
-        Say('Decimal yards use validated client distance; intervals are spell-range estimates.')
-    else Say('/futils unlock | lock | on | off | scale 0.5..2 | reset | status') end
+        Say('v0.4.0 | Utilities: '..#Modules.list)
+        for _,definition in ipairs(Modules.list) do
+            Say(definition.name..': '..(Modules.Settings(definition.id).enabled and 'enabled' or 'disabled'))
+            local instance=Modules.instances[definition.id]
+            if Modules.Settings(definition.id).enabled and instance and instance.Status then Say(instance.Status()) end
+        end
+    else Say('/futils opens the toolbox. Distance shortcuts: unlock | lock | on | off | scale 0.5..2 | reset | status') end
 end

@@ -1,11 +1,30 @@
 # Forever Utilities
 
-**See your range at a glance. Keep your screen clear between targets.**
+**Your utilities, your choice. Keep the tools you need and switch off the rest.**
 
-Forever Utilities brings a clear, movable distance indicator to **World of Warcraft:
-Forever**. Select an enemy to see a live yard reading when available, or an approximate range bracket and a color-coded
-icon. Clear your target and the panel dims to 20% opacity, staying out of the way
-until you need it again.
+Forever Utilities is a modular toolbox for **World of Warcraft: Forever**.
+Open `/futils` to choose which utilities are enabled and adjust each one's settings.
+**Distance Checker** is the first included utility; future tools will have their
+own controls rather than being added to the distance indicator.
+
+## Choose your utilities
+
+- **One toolbox panel:** open `/futils` (or `/futils options`).
+- **Independent toggles:** enable only the features you want.
+- **Per-utility settings:** changes and resets stay scoped to the selected utility.
+- **No disabled-module work:** disabled utilities stop their event listeners and update loops.
+- **Settings preserved:** existing distance position, scale, and enabled state migrate automatically.
+
+Select **Distance checker** in the panel to enable it, lock or unlock its position,
+change its size, or reset its settings. Uncheck “Lock indicator position” to drag
+it on your screen. The Close button or Escape dismisses the toolbox.
+
+## Distance Checker
+
+Select an enemy to see a live yard reading when available, or an approximate
+range bracket and color-coded icon. Clear your target and the panel dims to 20%
+opacity. Friendly targets without a usable reading say “Friendly target — Distance
+unavailable.” Numeric readings depend on what the client makes available.
 
 ## Built for quick reads
 
@@ -37,16 +56,17 @@ line of sight, facing, ammunition, or ability readiness.
 ## Get started
 
 Install the `ForeverUtilities` folder into `_classic_beta_/Interface/AddOns/`,
-restart WoW for first discovery, and enable **Forever Utilities**. Select a living
-hostile target to begin. For later updates, use `/reload`.
+restart WoW for first discovery, and enable **Forever Utilities**. Open `/futils`
+to choose your utilities, then select a target to try Distance Checker. For later updates, use `/reload`.
 
 | Command | Action |
 | --- | --- |
+| `/futils` | Open the shared utilities panel |
 | `/futils unlock` | Drag the indicator; stays fully visible while unlocked |
 | `/futils lock` | Lock its position |
 | `/futils scale 1.2` | Make it larger (supported range: 0.5–2) |
 | `/futils on` / `/futils off` | Show or disable the indicator |
-| `/futils reset` | Restore this addon's defaults |
+| `/futils reset` | Restore Distance Checker defaults only |
 | `/futils status` | Show version and range diagnostics |
 
 **Upgrading from the old project?** Disable or remove ForeverSwing and the

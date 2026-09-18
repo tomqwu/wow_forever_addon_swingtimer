@@ -58,3 +58,14 @@ Numeric distance uses UnitDistanceSquared only when checkedDistance is readable
 and true and the squared value is finite/nonnegative. Never fabricate a midpoint
 or use coordinates to bypass restrictions. Friendly targets may provide numeric
 distance; enemy numeric readings are not guaranteed. Clear stale values promptly.
+
+## Toolbox modules
+
+/futils opens the shared selector/settings panel. Modules.lua registers features,
+owns lazy creation and per-module settings, and migrates the old flat distance
+settings once to ForeverUtilitiesDB.modules.distance. Distance.lua owns the
+Distance Checker host and options; Range.lua owns its readings/events. Keep each
+future utility isolated under modules.<id>. Register before UI.lua initializes.
+Disabling must hide the feature, clear its OnUpdate, and unregister events; do not
+construct disabled modules on login. Preserve legacy distance shortcut commands.
+Check module isolation, panel interactions, and migration when changing this code.

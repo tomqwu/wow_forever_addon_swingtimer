@@ -3,7 +3,8 @@
     "path": "addons/ForeverUtilities",
     "tests": [
       "tests/test_range.lua",
-      "tests/test_ui.lua"
+      "tests/test_ui.lua",
+      "tests/test_modules.lua"
     ],
     "releaseTagPrefix": "ForeverUtilities-v"
   }
