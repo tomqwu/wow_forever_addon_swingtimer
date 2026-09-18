@@ -23,9 +23,7 @@ jobs:
         run: |
           luac5.1 -p ForeverSwing/Core.lua
           luac5.1 -p ForeverSwing/ForeverSwing.lua
-          luac5.1 -p ForeverSwing/HunterRange.lua
           lua5.1 tests/test_foreverswing.lua
-          lua5.1 tests/test_hunterrange.lua
       - name: Package addon
         id: package
         run: |
