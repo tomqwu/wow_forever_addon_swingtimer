@@ -78,10 +78,17 @@ The separate local ForeverHunterRange prototype is superseded by the distance
 module here. Disable the old addons if installing this manually to avoid duplicate
 UI. Their saved settings are not modified or imported.
 
-The old swing-timer CurseForge workflow is retired. **Forever Utilities is not
-uploaded to the swing timer's CurseForge project.** A separate project must be
-configured before enabling CurseForge publishing for this addon. GitHub releases
-continue in this repository.
+The user has repurposed the existing CurseForge project **1700438** for
+Forever Utilities. The GitHub repository description and CurseForge summary use:
+“Forever Utilities for WoW Forever: target distance checks with color-coded range indicators.”
+
+Each GitHub addon release automatically uploads its exact ZIP to project 1700438
+using the existing `CURSE_FORGE` secret and `CURSEFORGE_PROJECT_ID` variable.
+Only `ForeverUtilities-vX.Y.Z` tags and standalone `ForeverUtilities/` packages
+are accepted; old swing releases cannot be uploaded through this workflow.
+Uploads remain beta pending live validation. A `curseforge-ForeverUtilities-vX.Y.Z.json`
+receipt records successful acceptance; moderation may still be pending.
+Do not repeat an uncertain upload POST before checking CurseForge Files.
 
 API source used for the Forever 1.60.1 baseline:
 https://github.com/Gethe/wow-ui-source/tree/4d5d706b8e01c5ebe01c8dd9b7a07151d8d37069/Interface/AddOns/Blizzard_APIDocumentationGenerated

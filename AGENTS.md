@@ -34,10 +34,12 @@ for first addon discovery, or /reload for updates to an existing installation.
 
 ## Publishing boundary
 
-The former swing-specific CurseForge uploader and workflow are removed. Project
-1700438 belongs to ForeverSwing and must never receive ForeverUtilities packages.
-A new project ID and publishing configuration are required for this addon. Do not
-retrieve or expose existing token values. GitHub releases are already authorized
-as part of the user's established development workflow.
+The user explicitly requested reusing CurseForge project 1700438 for Forever
+Utilities on 2026-09-18, superseding the earlier separate-project restriction.
+Keep GitHub and CurseForge descriptions aligned with the utilities scope. The
+restored uploader accepts only ForeverUtilities-vX.Y.Z tags and standalone
+ForeverUtilities ZIPs. Use CURSE_FORGE and CURSEFORGE_PROJECT_ID without reading
+or exposing token values. Verify both release jobs and the upload receipt.
+Never retry an uncertain upload POST before checking project Files.
 
 Do not publish ignored addons.local.json entries or unrelated local files.
