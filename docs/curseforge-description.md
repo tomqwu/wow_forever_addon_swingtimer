@@ -3,7 +3,7 @@
 **See your range at a glance. Keep your screen clear between targets.**
 
 Forever Utilities brings a clear, movable distance indicator to **World of Warcraft:
-Forever**. Select an enemy to see an approximate yard bracket and a color-coded
+Forever**. Select an enemy to see a live yard reading when available, or an approximate range bracket and a color-coded
 icon. Clear your target and the panel dims to 20% opacity, staying out of the way
 until you need it again.
 
@@ -27,7 +27,10 @@ until you need it again.
 | Gray | No target, invalid target, or range data unavailable |
 
 Readings such as `<=5 yd`, `~8–35 yd`, and `>100 yd` are **approximate spell-based
-brackets**, not exact measurements. Precision depends on learned abilities,
+brackets**, not exact measurements. A decimal reading such as `23.4 yd` is shown
+only when the client supplies a validated numeric distance. It refreshes every
+0.15 seconds and may be unavailable for enemies or in restricted content. Numeric
+position distance can differ from spell reach, so colors still follow attack checks. Precision depends on learned abilities,
 target combat reach, and client restrictions. Being in range does not guarantee
 line of sight, facing, ammunition, or ability readiness.
 

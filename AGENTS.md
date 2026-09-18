@@ -10,7 +10,7 @@ Use verified Forever 1.60.x APIs. Respect secret values and missing APIs; never
 present fabricated exact yards. Spell checks supply approximate brackets. A
 failed minimum-range check can mean too close OR too far. Avoid hardcoded Classic
 spell IDs and scan learned spells. Poll only while enabled with a living
-attackable target, stopping on target loss, death, disable, and leaving the world.
+target, stopping on target loss, death, disable, and leaving the world.
 
 Runtime modules use the addon's namespace, independent frame names,
 ForeverUtilitiesDB, and /futils commands. Keep future module settings and update
@@ -53,3 +53,8 @@ the CurseForge uploader uses that body as its file changelog. Project-page edits
 are separate: do not claim the website description changed merely because an
 upload succeeded. With no target the indicator uses 20% opacity; selecting a
 target or unlocking restores full visibility without idle polling.
+
+Numeric distance uses UnitDistanceSquared only when checkedDistance is readable
+and true and the squared value is finite/nonnegative. Never fabricate a midpoint
+or use coordinates to bypass restrictions. Friendly targets may provide numeric
+distance; enemy numeric readings are not guaranteed. Clear stale values promptly.

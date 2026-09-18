@@ -9,6 +9,22 @@ local function Call(fn, ...)
     local ok, value = pcall(fn, ...)
     if ok and Core.IsReadable(value) then return value end
 end
+-- A numeric result is usable only when the client explicitly validates it.
+-- Enemy/instance restrictions commonly make this API unavailable.
+function Range.ReadDistance(unit)
+    if type(UnitDistanceSquared)~='function' then return nil end
+    local ok,squared,checked=pcall(UnitDistanceSquared,unit)
+    if not ok or not Core.IsReadable(checked) or checked~=true
+        or not Core.IsNumber(squared) or squared<0 then return nil end
+    return math.sqrt(squared)
+end
+function Range.WithDistance(state,text,yards)
+    if not Core.IsNumber(yards) or yards<0 then return state,text end
+    if state=='unknown' then state='distance' end
+    local title=text:match('^(.-) | ')
+    if not title then title='Distance' end
+    return state,string.format('%s | %.1f yd',title,yards)
+end
 -- Spell checks supply effective range brackets, not exact center-to-center yards.
 function Range.Measure(probes, melee, ranged, shot)
     local low, high, measured = 0, math.huge, false
@@ -129,6 +145,12 @@ function Range.Create(host, db)
     end
     local lastStatus='Not checked'
     local function Update()
+        local yards=Range.ReadDistance('target')
+        if Call(UnitCanAttack,'player','target')~=true then
+            local state,text=Range.WithDistance('unknown','Range unavailable',yards)
+            lastStatus='Numeric distance: '..(yards and 'available' or 'unavailable')..'; '..text
+            Paint(state,text); return
+        end
         local probes={}
         for _,p in ipairs(spells) do
             probes[#probes+1]={min=p.min,max=p.max,inside=SpellRange(p)}
@@ -143,7 +165,8 @@ function Range.Create(host, db)
             probes[#probes+1]={min=shot.min,max=shot.max,inside=shot.inside}
         end
         local state,text=Range.Measure(probes,melee,ranged,shot)
-        lastStatus='Spells: '..#spells..'; Auto Shot: '..(shot and 'found' or 'not found')
+        state,text=Range.WithDistance(state,text,yards)
+        lastStatus='Numeric distance: '..(yards and 'available' or 'unavailable')..'; Spells: '..#spells..'; Auto Shot: '..(shot and 'found' or 'not found')
             ..'; native melee/ranged: '..tostring(melee)..'/'..tostring(ranged)..'; '..text
         Paint(state,text)
     end
@@ -154,16 +177,15 @@ function Range.Create(host, db)
         local hasTarget=Call(UnitExists,'target')==true
         frame:SetAlpha((hasTarget or db.locked==false) and 1 or 0.2)
         if not hasTarget then Paint('unknown','No target'); return end
-        if Call(UnitCanAttack,'player','target')~=true or Call(UnitIsDead,'target')~=false then
-            Paint('unknown','No attackable target'); return
+        if Call(UnitIsDead,'target')~=false then
+            Paint('unknown','Target dead or unavailable'); return
         end
         Update(); elapsed=0
         frame:SetScript('OnUpdate',function(_,delta)
             elapsed=elapsed+delta
             if elapsed>=0.15 then
                 elapsed=0
-                if Call(UnitExists,'target')~=true or Call(UnitCanAttack,'player','target')~=true
-                    or Call(UnitIsDead,'target')~=false then Refresh() else Update() end
+                if Call(UnitExists,'target')~=true or Call(UnitIsDead,'target')~=false then Refresh() else Update() end
             end
         end)
     end

@@ -1,3 +1,12 @@
+## 0.3.0
+
+- Shows a live decimal yard reading when the client provides a validated numeric target distance.
+- Updates the displayed number every 0.15 seconds while a living target is selected, including friendly targets when supported.
+- Retains spell-based brackets whenever numeric distance is unavailable; never invents an exact number or keeps a stale reading.
+- Keeps attack-range colors independent of numeric distance, which can differ from combat reach.
+
+Use `/reload`. Exact numeric readings are not guaranteed for enemy targets or restricted areas; `/futils status` reports availability.
+
 ## 0.2.1
 
 - Fixed an out-of-range result remaining blue when Auto Shot metadata was unavailable and other spells supplied a bounded distance estimate.

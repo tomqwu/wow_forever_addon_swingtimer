@@ -70,8 +70,8 @@ SlashCmdList.FOREVERUTILITIES=function(message)
         for key,value in pairs(defaults) do db[key]=value end
         Layout()
     elseif command=='status' then
-        Say('v0.2.1 | '..(host and (db.enabled and 'enabled' or 'disabled') or 'unavailable'))
+        Say('v0.3.0 | '..(host and (db.enabled and 'enabled' or 'disabled') or 'unavailable'))
         if indicator and indicator.Status then Say(indicator.Status()) end
-        Say('Yards are spell-range brackets, not exact distance. Live game validation pending.')
+        Say('Decimal yards use validated client distance; intervals are spell-range estimates.')
     else Say('/futils unlock | lock | on | off | scale 0.5..2 | reset | status') end
 end

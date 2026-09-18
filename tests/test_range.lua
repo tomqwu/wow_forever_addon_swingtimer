@@ -29,6 +29,24 @@ fallback({{min=0,max=5,inside=false},{min=0,max=35,inside=true}},
 fallback({{min=0,max=100,inside=false}},nil,'beyond','Out of range | >100 yd')
 fallback({{min=0,max=35,inside=true}},nil,'distance','<=35 yd')
 fallback({}, {min=8,max=35,inside=secret},'unknown','Range unavailable')
+-- Never display invalid, restricted, or unchecked distances as real numbers.
+for _,value in ipairs({-1,math.huge,0/0,secret}) do
+    UnitDistanceSquared=function() return value,true end
+    check(NS.Range.ReadDistance('target')==nil,'reject invalid numeric distance')
+end
+UnitDistanceSquared=function() return 400,false end
+check(NS.Range.ReadDistance('target')==nil,'unchecked distance rejected')
+UnitDistanceSquared=function() return 400,secret end
+check(NS.Range.ReadDistance('target')==nil,'secret validity flag rejected')
+UnitDistanceSquared=function() error('restricted') end
+check(NS.Range.ReadDistance('target')==nil,'numeric API errors guarded')
+UnitDistanceSquared=function() return 0,true end
+check(NS.Range.ReadDistance('target')==0,'zero distance valid')
+UnitDistanceSquared=function() return 625,true end
+check(NS.Range.ReadDistance('target')==25,'squared distance converted to yards')
+local numericState,numericLabel=NS.Range.WithDistance('shoot','Shooting | ~8-35 yd',23.4)
+check(numericState=='shoot' and numericLabel=='Shooting | 23.4 yd','numeric label retains attack classification')
+UnitDistanceSquared=nil
 -- Mock discovery uses arbitrary IDs, proving it does not depend on Classic spell IDs.
 local frames={}
 local methods={}
@@ -110,6 +128,20 @@ C_SwingTimer.IsTargetWithinSwingRange=function() return nil end
 f.Refresh()
 check(f.label.text:find('Distance',1,true),'unavailable attack check is not invented as false')
 check(f.textures[2].color[1]==0.3 and f.textures[2].color[3]==1,'genuinely unclassified bracket remains blue')
+UnitDistanceSquared=function() return distance*distance,true end
+distance=23.4;f.Refresh()
+check(f.label.text:find('23.4 yd',1,true),'live decimal distance displayed')
+distance=24.7;f.scripts.OnUpdate(f,0.15)
+check(f.label.text:find('24.7 yd',1,true),'decimal updates as target moves')
+UnitDistanceSquared=function() return 0,false end
+f.scripts.OnUpdate(f,0.15)
+check(not f.label.text:find('24.7 yd',1,true),'lost distance availability clears stale numeric value')
+UnitCanAttack=function() return false end
+UnitDistanceSquared=function() return 144,true end
+f.Refresh()
+check(f.label.text=='Distance | 12.0 yd','friendly target numeric distance supported')
+UnitCanAttack=function() return true end
+UnitDistanceSquared=nil
 class='HUNTER';C_Spell=nil;C_SpellBook=nil
 f=NS.Range.Create({},db)
 check(f.label.text:find('Range unavailable',1,true),'missing APIs degrade safely')
