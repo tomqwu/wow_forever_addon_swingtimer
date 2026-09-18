@@ -12,6 +12,8 @@ concurrency:
   cancel-in-progress: false
 jobs:
   release:
+    outputs:
+      version: ${{ steps.package.outputs.version }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -40,3 +42,10 @@ jobs:
             --target "$GITHUB_SHA" \
             --title "ForeverSwing v$VERSION" \
             --generate-notes
+  curseforge:
+    needs: release
+    uses: ./.github/workflows/curseforge.yml
+    with:
+      tag: v${{ needs.release.outputs.version }}
+    secrets:
+      CURSE_FORGE: ${{ secrets.CURSE_FORGE }}

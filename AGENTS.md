@@ -41,3 +41,13 @@ Documentation-only or tooling-only changes do not require an addon version bump.
 - /fswing oocalpha 0 allows complete out-of-combat transparency.
 - Existing per-bar range dimming remains independent of parent-frame opacity.
 - Fade and swing update handlers must stop when idle; do not add idle polling.
+
+## CurseForge publishing
+
+The release workflow also publishes to CurseForge project 1700438 using the
+CURSE_FORGE Actions secret and CURSEFORGE_PROJECT_ID repository variable. Verify
+both the GitHub release and CurseForge upload job for every addon release. Uploads
+are beta until actual in-game validation justifies changing the release type.
+Never print or retrieve the secret value. If game version 1.60.x is unavailable,
+report the blocker rather than marking the addon compatible with another branch.
+If a POST has an uncertain outcome, check CurseForge Files before retrying.

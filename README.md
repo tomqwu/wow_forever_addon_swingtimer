@@ -62,3 +62,29 @@ implement and test, bump the version, build the ZIP, install and verify the loca
 copy when available, push, and verify the GitHub release and asset. Completion
 notes include the release link and the required reload/setup commands. Simulated
 tests and in-game testing are reported separately.
+
+## CurseForge publishing
+
+Project: [WoW Forever Melee Swing Timer](https://www.curseforge.com/wow/addons/wow-forever-melee-swing-timer)
+(project ID `1700438`).
+
+The release workflow calls **Publish to CurseForge** after creating the GitHub
+release. It uploads that exact release ZIP as a **beta**, using repository secret
+`CURSE_FORGE` and repository variable `CURSEFORGE_PROJECT_ID`. No token is stored
+in source or passed in URLs. The uploader resolves the exact `1.60.1` game-version
+ID through CurseForge's API; it fails instead of substituting a Classic/Retail tag
+when Forever is unavailable.
+
+To publish an existing release, run **Actions → Publish to CurseForge → Run
+workflow**, enter a tag such as `v0.2.0`, and turn off **dry_run**. A dry run checks
+the package and authenticated version API without uploading. The project may
+require CurseForge moderation after an upload is accepted.
+
+Successful uploads attach a `curseforge-vX.Y.Z.json` receipt to the GitHub release,
+so reruns with that receipt skip the upload. An interrupted upload or a failure to
+save the receipt needs a manual check of CurseForge Files before retrying; upload
+POSTs are never automatically retried. Do not change/delete a published release ZIP.
+
+Publisher tests: `python3 -m unittest discover -s tests -p 'test_curseforge.py'`.
+
+API reference: [CurseForge Upload API](https://support.curseforge.com/support/solutions/articles/9000197321).
