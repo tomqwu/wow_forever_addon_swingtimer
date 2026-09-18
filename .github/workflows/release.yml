@@ -1,0 +1,42 @@
+name: Release addon
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'ForeverSwing/**'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: addon-release
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Lua
+        run: sudo apt-get update && sudo apt-get install -y lua5.1
+      - name: Validate addon
+        run: |
+          luac5.1 -p ForeverSwing/Core.lua
+          luac5.1 -p ForeverSwing/ForeverSwing.lua
+          lua5.1 tests/test_foreverswing.lua
+      - name: Package addon
+        id: package
+        run: |
+          python3 scripts/package.py >> "$GITHUB_OUTPUT"
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.package.outputs.version }}
+          ARCHIVE: ${{ steps.package.outputs.archive }}
+        run: |
+          if gh release view "v$VERSION" >/dev/null 2>&1; then
+            echo "Release v$VERSION already exists. Bump the TOC version for each fix or feature."
+            exit 1
+          fi
+          gh release create "v$VERSION" "$ARCHIVE" \
+            --target "$GITHUB_SHA" \
+            --title "ForeverSwing v$VERSION" \
+            --generate-notes

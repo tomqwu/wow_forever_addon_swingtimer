@@ -40,3 +40,13 @@ luac -p ForeverSwing/Core.lua
 luac -p ForeverSwing/ForeverSwing.lua
 lua tests/test_foreverswing.lua
 ```
+
+## Releases
+
+Download the installable ZIP from [GitHub Releases](https://github.com/tomqwu/wow_forever_addon_swingtimer/releases).
+Every addon fix or feature gets a new version. Pushes to `main` that change
+`ForeverSwing/` run syntax checks and tests, build a ZIP, and publish the version
+from `ForeverSwing.toc`. Existing releases are never overwritten; bump the version
+before the next fix or feature. The workflow can also be run manually.
+
+To package locally: `python3 scripts/package.py`.
