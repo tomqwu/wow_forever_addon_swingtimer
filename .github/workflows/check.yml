@@ -1,0 +1,27 @@
+name: Check toolbox
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Lua
+        run: sudo apt-get update && sudo apt-get install -y lua5.1
+      - name: Check public utilities and tooling
+        run: python3 scripts/check.py
+      - name: Verify standalone packages
+        run: |
+          python3 - <<'PYCODE'
+          import sys
+          sys.path.insert(0, 'scripts')
+          from toolbox import registry, package
+          for name in registry():
+              version, archive = package(name)
+              print(name, version, archive)
+          PYCODE

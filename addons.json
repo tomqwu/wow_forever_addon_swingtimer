@@ -1,0 +1,10 @@
+{
+  "ForeverUtilities": {
+    "path": "addons/ForeverUtilities",
+    "tests": [
+      "tests/test_range.lua",
+      "tests/test_ui.lua"
+    ],
+    "releaseTagPrefix": "ForeverUtilities-v"
+  }
+}

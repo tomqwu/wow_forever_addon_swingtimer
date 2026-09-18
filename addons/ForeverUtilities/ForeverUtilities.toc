@@ -1,0 +1,9 @@
+## Interface: 16001
+## Title: Forever Utilities
+## Notes: Lightweight Forever utilities: target distance brackets and a colored range icon.
+## Author: Codex
+## Version: 0.1.0
+## SavedVariables: ForeverUtilitiesDB
+Core.lua
+Range.lua
+UI.lua

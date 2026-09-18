@@ -1,51 +1,50 @@
-name: Release addon
+name: Release ForeverUtilities
 on:
   push:
     branches: [main]
     paths:
-      - 'ForeverSwing/**'
+      - 'addons/ForeverUtilities/**'
   workflow_dispatch:
 permissions:
   contents: write
 concurrency:
-  group: addon-release
+  group: utilities-release
   cancel-in-progress: false
 jobs:
   release:
     outputs:
+      required: ${{ steps.change.outputs.required }}
       version: ${{ steps.package.outputs.version }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check addon version change
+        id: change
+        env:
+          BEFORE_SHA: ${{ github.event.before || 'HEAD^' }}
+        run: python3 scripts/release_change.py >> "$GITHUB_OUTPUT"
       - name: Install Lua
         run: sudo apt-get update && sudo apt-get install -y lua5.1
       - name: Validate addon
-        run: |
-          luac5.1 -p ForeverSwing/Core.lua
-          luac5.1 -p ForeverSwing/ForeverSwing.lua
-          lua5.1 tests/test_foreverswing.lua
+        run: python3 scripts/check.py
       - name: Package addon
         id: package
         run: |
           python3 scripts/package.py >> "$GITHUB_OUTPUT"
       - name: Publish release
+        if: steps.change.outputs.required == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.package.outputs.version }}
           ARCHIVE: ${{ steps.package.outputs.archive }}
         run: |
-          if gh release view "v$VERSION" >/dev/null 2>&1; then
+          if gh release view "ForeverUtilities-v$VERSION" >/dev/null 2>&1; then
             echo "Release v$VERSION already exists. Bump the TOC version for each fix or feature."
             exit 1
           fi
-          gh release create "v$VERSION" "$ARCHIVE" \
+          gh release create "ForeverUtilities-v$VERSION" "$ARCHIVE" \
             --target "$GITHUB_SHA" \
-            --title "ForeverSwing v$VERSION" \
+            --title "ForeverUtilities v$VERSION" \
             --generate-notes
-  curseforge:
-    needs: release
-    uses: ./.github/workflows/curseforge.yml
-    with:
-      tag: v${{ needs.release.outputs.version }}
-    secrets:
-      CURSE_FORGE: ${{ secrets.CURSE_FORGE }}
