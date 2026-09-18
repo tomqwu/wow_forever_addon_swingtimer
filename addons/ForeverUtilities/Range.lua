@@ -3,7 +3,7 @@ local Core = NS.Core
 local Range = {}
 NS.Range = Range
 local colors = { melee={1,0.65,0.15}, close={1,0.3,0.1}, shoot={0.2,1,0.35},
-    far={1,0.15,0.2}, unknown={0.8,0.8,0.85} }
+    far={1,0.15,0.2}, distance={0.3,0.8,1}, unknown={0.8,0.8,0.85} }
 local function Call(fn, ...)
     if type(fn) ~= 'function' then return nil end
     local ok, value = pcall(fn, ...)
@@ -22,6 +22,12 @@ function Range.Measure(probes, melee, ranged, shot)
             end
         end
     end
+    -- Native attack queries can be unavailable to addons. A readable Auto Shot
+    -- check supplies the same classification without guessing from a nil result.
+    if (not Core.IsReadable(ranged) or type(ranged)~='boolean') and shot
+        and Core.IsReadable(shot.inside) and type(shot.inside)=='boolean' then
+        ranged=shot.inside
+    end
     local state = 'unknown'
     if Core.IsReadable(ranged) and ranged == true then state = 'shoot'
     elseif Core.IsReadable(melee) and melee == true then state = 'melee'
@@ -32,14 +38,16 @@ function Range.Measure(probes, melee, ranged, shot)
             state, low = 'far', math.max(low,shot.max)
         end
     end
-    if low >= high then return 'unknown', 'Range unknown' end
-    local yards = 'Range unknown'
+    if low >= high then return 'unknown', 'Range unavailable' end
+    if state=='unknown' and measured then state='distance' end
+    local yards = 'yards unavailable'
     if measured then
         if high == math.huge then yards = string.format('>%g yd',low)
         elseif low == 0 then yards = string.format('<=%g yd',high)
         else yards = string.format('~%g-%g yd',low,high) end
     end
-    local labels = {melee='Melee',close='Too close',shoot='Shooting',far='Too far',unknown='Uncertain'}
+    local labels = {melee='Melee',close='Too close',shoot='Shooting',far='Too far',distance='Distance',unknown='Range unavailable'}
+    if state=='unknown' then return state, labels[state] end
     return state, labels[state] .. ' | ' .. yards
 end
 function Range.Create(host, db)
@@ -70,7 +78,7 @@ function Range.Create(host, db)
     local spells, shot, elapsed = {}, nil, 0
     local function Discover()
         spells, shot = {}, nil
-        if not C_SpellBook or not C_Spell or not Enum.SpellBookSpellBank then return end
+        if not C_SpellBook or not C_Spell or not Enum or not Enum.SpellBookSpellBank then return end
         local count = Call(C_SpellBook.GetNumSpellBookSkillLines)
         if not Core.IsNumber(count) then return end
         local seen = {}
@@ -80,13 +88,16 @@ function Range.Create(host, db)
                 for slot=info.itemIndexOffset+1,info.itemIndexOffset+info.numSpellBookItems do
                     local item=Call(C_SpellBook.GetSpellBookItemInfo,slot,Enum.SpellBookSpellBank.Player)
                     local id=type(item)=='table' and item.spellID
-                    if Core.IsNumber(id) and not seen[id] and Call(C_SpellBook.IsSpellKnown,id)==true then
+                    if Core.IsNumber(id) and not seen[id] and Core.IsReadable(item.isPassive)
+                        and Core.IsReadable(item.isOffSpec) and not item.isPassive and not item.isOffSpec
+                        and Call(C_SpellBook.IsSpellKnown,id)==true then
                         seen[id]=true
                         local data=Call(C_Spell.GetSpellInfo,id)
                         if type(data)=='table' and Core.IsNumber(data.minRange) and Core.IsNumber(data.maxRange)
                             and data.minRange>=0 and data.maxRange>data.minRange then
-                            local p={id=id,min=data.minRange,max=data.maxRange}
-                            if Call(C_Spell.IsRangedAutoAttackSpell,id)==true then
+                            local p={id=id,slot=slot,min=data.minRange,max=data.maxRange}
+                            if Call(C_SpellBook.IsRangedAutoAttackSpellBookItem,slot,Enum.SpellBookSpellBank.Player)==true
+                                or Call(C_Spell.IsRangedAutoAttackSpell,id)==true then
                                 shot=p
                                 if Core.IsNumber(data.iconID) then icon:SetTexture(data.iconID) end
                             end
@@ -105,18 +116,31 @@ function Range.Create(host, db)
         label:SetTextColor(1,1,1,1)
         label:SetText(text)
     end
+    local function SpellRange(p)
+        local value=Call(C_SpellBook and C_SpellBook.IsSpellBookItemInRange,
+            p.slot,Enum.SpellBookSpellBank.Player,'target')
+        if type(value)=='boolean' then return value end
+        return Call(C_Spell and C_Spell.IsSpellInRange,p.id,'target')
+    end
+    local lastStatus='Not checked'
     local function Update()
         local probes={}
         for _,p in ipairs(spells) do
-            probes[#probes+1]={min=p.min,max=p.max,inside=Call(C_Spell.IsSpellInRange,p.id,'target')}
+            probes[#probes+1]={min=p.min,max=p.max,inside=SpellRange(p)}
         end
         local types=Enum and Enum.PlayerSwingType
         local api=C_SwingTimer and C_SwingTimer.IsTargetWithinSwingRange
         local melee=types and Call(api,types.MainHand)
         local ranged=types and Call(api,types.Ranged)
         -- Auto Shot metadata only bounds yards when its own range check succeeds.
-        if shot then probes[#probes+1]={min=shot.min,max=shot.max,inside=Call(C_Spell.IsSpellInRange,shot.id,'target')} end
-        Paint(Range.Measure(probes,melee,ranged,shot))
+        if shot then
+            shot.inside=SpellRange(shot)
+            probes[#probes+1]={min=shot.min,max=shot.max,inside=shot.inside}
+        end
+        local state,text=Range.Measure(probes,melee,ranged,shot)
+        lastStatus='Spells: '..#spells..'; Auto Shot: '..(shot and 'found' or 'not found')
+            ..'; native melee/ranged: '..tostring(melee)..'/'..tostring(ranged)..'; '..text
+        Paint(state,text)
     end
     local function Refresh()
         frame:SetScript('OnUpdate',nil)
@@ -146,6 +170,7 @@ function Range.Create(host, db)
     end)
     for _,event in ipairs({'PLAYER_TARGET_CHANGED','SPELLS_CHANGED','PLAYER_ENTERING_WORLD',
         'PLAYER_LEAVING_WORLD','PLAYER_DEAD','PLAYER_EQUIPMENT_CHANGED','UNIT_FLAGS'}) do frame:RegisterEvent(event) end
+    frame.Status=function() return lastStatus end
     frame.Refresh=Refresh
     Discover(); Refresh()
     return frame

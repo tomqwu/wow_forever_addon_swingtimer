@@ -13,11 +13,22 @@ measure({{min=0,max=5,inside=true}},true,false,'melee','<=5 yd')
 measure({{min=0,max=5,inside=false},{min=0,max=35,inside=true}},false,false,'close','~5-8 yd')
 measure({{min=8,max=35,inside=true}},false,true,'shoot','~8-35 yd')
 measure({{min=0,max=35,inside=false}},false,false,'far','>35 yd')
-measure({},false,false,'unknown','Range unknown')
+measure({},false,false,'unknown','Range unavailable')
 measure({{min=8,max=35,inside=false}},false,false,'unknown')
 measure({{min=0,max=35,inside=secret}},secret,secret,'unknown')
 measure({{min=0,max=5,inside=true},{min=0,max=35,inside=false}},false,false,'unknown')
 measure({},nil,nil,'unknown')
+local function fallback(probes,shot,state,text)
+    local actual,label=NS.Range.Measure(probes,nil,nil,shot)
+    check(actual==state and label:find(text,1,true),label)
+end
+fallback({{min=8,max=35,inside=true}},{min=8,max=35,inside=true},'shoot','Shooting')
+fallback({{min=0,max=35,inside=false}},{min=8,max=35,inside=false},'far','>35 yd')
+fallback({{min=0,max=5,inside=false},{min=0,max=35,inside=true}},
+    {min=8,max=35,inside=false},'close','~5-8 yd')
+fallback({{min=0,max=100,inside=false}},nil,'distance','Distance | >100 yd')
+fallback({{min=0,max=35,inside=true}},nil,'distance','<=35 yd')
+fallback({}, {min=8,max=35,inside=secret},'unknown','Range unavailable')
 -- Mock discovery uses arbitrary IDs, proving it does not depend on Classic spell IDs.
 local frames={}
 local methods={}
@@ -61,7 +72,19 @@ check(f.shown and f.scripts.OnUpdate,'enable starts polling')
 f.scripts.OnEvent(f,'PLAYER_LEAVING_WORLD')
 check(not f.scripts.OnUpdate,'loading screen stops polling')
 class='PALADIN';check(NS.Range.Create({},db)~=nil,'distance utility supports other classes')
+-- Spellbook slot checks must work even when native and spell-ID queries fail.
+C_SwingTimer.IsTargetWithinSwingRange=function() return nil end
+C_Spell.IsSpellInRange=function() error('unavailable') end
+C_SpellBook.IsSpellBookItemInRange=function(slot)
+    local data=metadata[slot];return distance>=data.minRange and distance<=data.maxRange
+end
+distance=20
+f=NS.Range.Create({},db)
+check(f.label.text:find('Shooting',1,true),'spellbook fallback classifies shooting')
+check(f.Status():find('nil/nil',1,true),'diagnostics report missing native checks')
+distance=50;f.scripts.OnUpdate(f,0.15)
+check(f.label.text:find('Too far',1,true),'spellbook fallback classifies far')
 class='HUNTER';C_Spell=nil;C_SpellBook=nil
 f=NS.Range.Create({},db)
-check(f.label.text:find('Range unknown',1,true),'missing APIs degrade safely')
+check(f.label.text:find('Range unavailable',1,true),'missing APIs degrade safely')
 print('PASS: '..count..' distance checks')

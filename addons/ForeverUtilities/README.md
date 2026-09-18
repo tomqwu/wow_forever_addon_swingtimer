@@ -14,15 +14,16 @@ Select a living hostile target. The icon updates as either of you moves:
 | Amber | In native melee range |
 | Orange | Confirmed too close for ranged auto attack |
 | Red | Confirmed beyond ranged auto-attack range |
-| Gray | Ambiguous/unavailable status, or no valid target |
+| Blue | Distance bracket available without attack-range classification |
+| Gray | Range data unavailable, or no valid target |
 
 The label shows spell-based brackets such as `<=5 yd`, `~8-35 yd`, or `>35 yd`.
 These are **approximate ranges, not exact distance measurements**. The utility
 uses learned spells and their current metadata instead of fixed Classic spell
 IDs. Available spells, target combat reach, and API restrictions affect precision.
 It works on all classes; the close/shooting/far distinctions are most useful for
-hunters. A gray icon can still show a known yard bracket when ranged status is
-ambiguous. Green does not guarantee facing, line of sight, ammo, or readiness.
+hunters. A blue Distance label shows a known yard bracket when attack-range status is
+unavailable. Green does not guarantee facing, line of sight, ammo, or readiness.
 
 ## Install and use
 
@@ -98,3 +99,7 @@ Automated tests use a simulated client. Live gameplay validation remains pending
 The distance readout uses a dark panel, large outlined white text, and a larger
 icon with a solid range-colored border for visibility against terrain. Use
 `/futils scale 1.2` to enlarge it further; existing position and scale are preserved.
+
+Native attack-range results can be unavailable. Version 0.1.3 also checks actual
+spellbook slots and falls back to Auto Shot range for hunter classification.
+`/futils status` reports discovered spell counts and native range availability.

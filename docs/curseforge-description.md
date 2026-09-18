@@ -14,7 +14,8 @@ that changes color as range changes:
 - Amber: in melee range.
 - Orange: confirmed too close for ranged auto attack.
 - Red: confirmed beyond ranged auto-attack range.
-- Gray: ambiguous or unavailable status, or no valid target.
+- Blue: distance bracket available without attack-range classification.
+- Gray: unavailable range data or no valid target.
 
 Labels such as <=5 yd or ~8–35 yd are spell-based brackets, not exact distance.
 Precision depends on learned abilities, target combat reach, and client API
@@ -46,3 +47,7 @@ Source and issues: https://github.com/tomqwu/wow_forever_addon_swingtimer
 The distance readout uses a dark panel, large outlined white text, and a larger
 icon with a solid range-colored border for visibility against terrain. Use
 `/futils scale 1.2` to enlarge it further; existing position and scale are preserved.
+
+Native attack-range results can be unavailable. Version 0.1.3 also checks actual
+spellbook slots and falls back to Auto Shot range for hunter classification.
+`/futils status` reports discovered spell counts and native range availability.
