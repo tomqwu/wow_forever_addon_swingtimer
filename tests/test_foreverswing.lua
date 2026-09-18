@@ -29,7 +29,7 @@ local function run(blocked)
     end
     function methods:IsEventRegistered(e) return self.events[e] end
     function methods:UnregisterEvent(e) self.events[e] = nil end
-    function methods:CreateTexture() return object() end
+    function methods:CreateTexture() local t=object(); self.textures=rawget(self,'textures') or {}; table.insert(self.textures,t); return t end
     function methods:CreateFontString() return object() end
     function methods:SetText(v) self.text = v end
     function methods:SetFormattedText(fmt, ...) self.text = string.format(fmt, ...) end
@@ -59,7 +59,7 @@ local function run(blocked)
     local function event(name, ...) eventFrame.scripts.OnEvent(eventFrame, name, ...) end
     event('ADDON_LOADED', 'ForeverSwing')
     local host, main, off = frames[2], frames[3], frames[4]
-    check(ForeverSwingDB.width == 300 and ForeverSwingDB.cue == 0, 'sanitize saved values')
+    check(ForeverSwingDB.width == 300 and ForeverSwingDB.cue == 0.4, 'sanitize saved values')
     if blocked then
         check(not eventFrame.events.PLAYER_SWING, 'blocked event handled')
         check(host.scripts.OnUpdate == nil, 'blocked API no fake timer')
@@ -72,6 +72,11 @@ local function run(blocked)
     check(host.scripts.OnUpdate == nil, 'ranged ignored')
     event('PLAYER_SWING', 3.6, 0)
     check(host.scripts.OnUpdate ~= nil, 'main-hand timer started')
+    check(main.textures[2].shown and main.textures[3].shown, 'reference zone and line visible')
+    SlashCmdList.FOREVERSWING('cue 0')
+    host.scripts.OnUpdate(host, 0.1)
+    check(not main.textures[2].shown and not main.textures[3].shown, 'cue off hides zone and line')
+    SlashCmdList.FOREVERSWING('cue 0.4')
     clock = 1.8; host.scripts.OnUpdate(host, 0.2)
     check(math.abs(main.value - 0.5) < 0.001, 'UI follows native duration')
     event('PLAYER_TARGET_CHANGED')
@@ -109,7 +114,7 @@ local function run(blocked)
     SlashCmdList.FOREVERSWING('width 9999')
     check(ForeverSwingDB.width == 300, 'invalid width rejected')
     SlashCmdList.FOREVERSWING('reset')
-    check(ForeverSwingDB.cue == 0 and not ForeverSwingDB.offhand, 'reset defaults')
+    check(ForeverSwingDB.cue == 0.4 and not ForeverSwingDB.offhand, 'reset defaults')
 end
 run(false)
 run(true)

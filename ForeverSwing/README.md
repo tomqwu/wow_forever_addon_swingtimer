@@ -1,4 +1,4 @@
-# ForeverSwing 0.1.0
+# ForeverSwing 0.1.1
 
 A small, standalone melee swing-bar addon for World of Warcraft: Forever beta
 1.60.1 (69893). Main-hand countdown, optional off-hand countdown, movable frame,
@@ -21,10 +21,13 @@ returns to Ready; it does not pretend another swing happened.
 - `/fswing offhand on` or `off` — second melee bar (off by default for Paladin).
 - `/fswing width 350` — width from 120 to 800.
 - `/fswing scale 1.2` — scale from 0.5 to 2.
-- `/fswing cue 0.4` — optional marker/highlight in the final 0.4 seconds.
-- `/fswing cue 0` — disable the cue (default).
+- `/fswing cue 0.4` — line and shaded reference area in the final 0.4 seconds (new-install default).
+- `/fswing cue 0` — disable the cue.
 - `/fswing reset` — restore addon settings.
 - `/fswing status` — client build/interface, event availability and received count.
+
+Existing saved cue settings are preserved. After upgrading, run `/fswing cue 0.4`
+to enable the line and shaded area if the cue was previously off.
 
 The optional cue is YOUR timing preference, not a confirmed Forever seal-twist
 window. This addon does not detect equipped seals, Echo consumption, successful
@@ -64,7 +67,7 @@ Findings:
 ## Validation and limits
 
 - `luac -p` syntax validation passed for both Lua files.
-- 37 local model/mock-client checks passed. They cover countdown math,
+- 39 local model/mock-client checks passed. They cover countdown math,
   invalid/secret payloads, ranged exclusion, main/off-hand separation,
   range semantics, expiry without free-running, equipment changes, demo
   replacement, saved-setting validation, and blocked event registration.

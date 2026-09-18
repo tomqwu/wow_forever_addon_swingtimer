@@ -1,7 +1,7 @@
 local addon, NS = ...
 local Core = NS.Core
 local defaults = { x = 0, y = -160, width = 300, height = 24, scale = 1,
-    locked = true, offhand = false, cue = 0 }
+    locked = true, offhand = false, cue = 0.4 }
 local db, host, bars, supported, reason, preview
 local eventCount = 0
 local mainHand, offHand
@@ -24,13 +24,14 @@ local function Normalize()
     db.width = Number(db.width, 300, 120, 800)
     db.height = Number(db.height, 24, 16, 60)
     db.scale = Number(db.scale, 1, 0.5, 2)
-    db.cue = Number(db.cue, 0, 0, 3)
+    db.cue = Number(db.cue, 0.4, 0, 3)
 end
 local function Idle(bar, text)
     bar.state = {}
     bar.fill:SetValue(0)
     bar.time:SetText(text or "Ready")
     bar.marker:Hide()
+    bar.zone:Hide()
     bar.fill:SetStatusBarColor(0.85, 0.66, 0.22)
 end
 local function Layout()
@@ -59,10 +60,12 @@ local function NewBar(label)
     title:SetText(label)
     local time = fill:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     time:SetPoint("RIGHT", -7, 0)
+    local zone = fill:CreateTexture(nil, "ARTWORK")
+    zone:SetColorTexture(0.2, 0.9, 0.45, 0.22)
     local marker = fill:CreateTexture(nil, "OVERLAY")
     marker:SetColorTexture(0.3, 1, 0.6, 0.95)
     marker:SetWidth(2)
-    local bar = { fill = fill, time = time, marker = marker, state = {} }
+    local bar = { fill = fill, time = time, marker = marker, zone = zone, state = {} }
     Idle(bar, "Waiting for swing")
     return bar
 end
@@ -86,7 +89,11 @@ local function Render()
                 bar.marker:SetPoint("TOPLEFT", bar.fill, "TOPLEFT", db.width * (1 - cue / bar.state.duration), 0)
                 bar.marker:SetHeight(db.height)
                 bar.marker:Show()
-            else bar.marker:Hide() end
+                bar.zone:ClearAllPoints()
+                bar.zone:SetPoint("TOPRIGHT", bar.fill, "TOPRIGHT", 0, 0)
+                bar.zone:SetSize(db.width * cue / bar.state.duration, db.height)
+                bar.zone:Show()
+            else bar.marker:Hide(); bar.zone:Hide() end
             if cue > 0 and remaining <= cue then
                 bar.fill:SetStatusBarColor(0.2, 0.85, 0.48)
             else bar.fill:SetStatusBarColor(i == 1 and 0.85 or 0.35, 0.66, i == 1 and 0.22 or 0.9) end
@@ -231,12 +238,12 @@ SlashCmdList.FOREVERSWING = function(message)
         Clear("Waiting for swing"); Layout()
     elseif command == "status" then
         local version, build, _, interface = GetBuildInfo()
-        Say("v0.1.0 | client " .. tostring(version) .. " build " .. tostring(build) .. " interface " .. tostring(interface))
+        Say("v0.1.1 | client " .. tostring(version) .. " build " .. tostring(build) .. " interface " .. tostring(interface))
         Say("Native event: " .. (supported and "registered" or "unavailable") .. "; melee events: " .. eventCount)
         Say(reason or "No API restriction observed. Live combat validation still requires actual swings.")
     else
         Say("/fswing unlock | lock | test | reset | status")
         Say("/fswing offhand on|off | cue 0..3 | width 120..800 | scale 0.5..2")
-        Say("Cue defaults OFF. It is a personal marker, not a seal/proc detector.")
+        Say("Cue defaults to 0.4s. It is a personal marker, not a seal/proc detector.")
     end
 end
