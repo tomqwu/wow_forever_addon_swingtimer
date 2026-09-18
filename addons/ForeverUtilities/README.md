@@ -103,3 +103,8 @@ icon with a solid range-colored border for visibility against terrain. Use
 Native attack-range results can be unavailable. Version 0.1.3 also checks actual
 spellbook slots and falls back to Auto Shot range for hunter classification.
 `/futils status` reports discovered spell counts and native range availability.
+
+An unbounded result such as `>100 yd` is red and labeled **Out of range**
+(beyond the checked spell range). Bounded distance estimates remain blue when
+attack-range classification is unavailable. This does not imply every ability
+is out of range.

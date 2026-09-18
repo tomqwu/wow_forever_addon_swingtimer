@@ -3,7 +3,7 @@ local Core = NS.Core
 local Range = {}
 NS.Range = Range
 local colors = { melee={1,0.65,0.15}, close={1,0.3,0.1}, shoot={0.2,1,0.35},
-    far={1,0.15,0.2}, distance={0.3,0.8,1}, unknown={0.8,0.8,0.85} }
+    far={1,0.15,0.2}, distance={0.3,0.8,1}, beyond={1,0.15,0.2}, unknown={0.8,0.8,0.85} }
 local function Call(fn, ...)
     if type(fn) ~= 'function' then return nil end
     local ok, value = pcall(fn, ...)
@@ -39,14 +39,16 @@ function Range.Measure(probes, melee, ranged, shot)
         end
     end
     if low >= high then return 'unknown', 'Range unavailable' end
-    if state=='unknown' and measured then state='distance' end
+    if state=='unknown' and measured then
+        state=high==math.huge and 'beyond' or 'distance'
+    end
     local yards = 'yards unavailable'
     if measured then
         if high == math.huge then yards = string.format('>%g yd',low)
         elseif low == 0 then yards = string.format('<=%g yd',high)
         else yards = string.format('~%g-%g yd',low,high) end
     end
-    local labels = {melee='Melee',close='Too close',shoot='Shooting',far='Too far',distance='Distance',unknown='Range unavailable'}
+    local labels = {melee='Melee',close='Too close',shoot='Shooting',far='Too far',distance='Distance',beyond='Out of range',unknown='Range unavailable'}
     if state=='unknown' then return state, labels[state] end
     return state, labels[state] .. ' | ' .. yards
 end

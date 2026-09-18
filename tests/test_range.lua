@@ -26,7 +26,7 @@ fallback({{min=8,max=35,inside=true}},{min=8,max=35,inside=true},'shoot','Shooti
 fallback({{min=0,max=35,inside=false}},{min=8,max=35,inside=false},'far','>35 yd')
 fallback({{min=0,max=5,inside=false},{min=0,max=35,inside=true}},
     {min=8,max=35,inside=false},'close','~5-8 yd')
-fallback({{min=0,max=100,inside=false}},nil,'distance','Distance | >100 yd')
+fallback({{min=0,max=100,inside=false}},nil,'beyond','Out of range | >100 yd')
 fallback({{min=0,max=35,inside=true}},nil,'distance','<=35 yd')
 fallback({}, {min=8,max=35,inside=secret},'unknown','Range unavailable')
 -- Mock discovery uses arbitrary IDs, proving it does not depend on Classic spell IDs.
