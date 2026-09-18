@@ -16,7 +16,7 @@ check(NS.Core.Sample(state, 14) == nil and state.finish == nil, 'expiry stops')
 for _, value in ipairs({0, -1, 121, math.huge, -math.huge, 0/0, '3', secret}) do
     check(not NS.Core.Start(state, value, 0), 'reject invalid duration')
 end
-local function run(blocked)
+local function run(blocked, saved, initOnly)
     local frames, clock, range = {}, 0, nil
     local methods = {}
     local function object()
@@ -29,7 +29,7 @@ local function run(blocked)
     end
     function methods:IsEventRegistered(e) return self.events[e] end
     function methods:UnregisterEvent(e) self.events[e] = nil end
-    function methods:CreateTexture() local t=object(); self.textures=rawget(self,'textures') or {}; table.insert(self.textures,t); return t end
+    function methods:CreateTexture(_, layer, _, sublayer) local t=object(); t.layer=layer; t.sublayer=sublayer; self.textures=rawget(self,'textures') or {}; table.insert(self.textures,t); return t end
     function methods:CreateFontString() return object() end
     function methods:SetText(v) self.text = v end
     function methods:SetFormattedText(fmt, ...) self.text = string.format(fmt, ...) end
@@ -54,12 +54,13 @@ local function run(blocked)
     Enum = {PlayerSwingType={MainHand=0, OffHand=1, Ranged=2}}
     C_SwingTimer = {IsTargetWithinSwingRange=function() return range end}
     SlashCmdList = {}
-    ForeverSwingDB = {width=0/0, cue=math.huge}
+    ForeverSwingDB = saved or {width=0/0, cue=math.huge}
     assert(loadfile(root .. 'ForeverSwing.lua'))('ForeverSwing', NS)
     local eventFrame = frames[1]
     local function event(name, ...) eventFrame.scripts.OnEvent(eventFrame, name, ...) end
     event('ADDON_LOADED', 'ForeverSwing')
     local host, main, off = frames[2], frames[3], frames[4]
+    if initOnly then return ForeverSwingDB.cue, ForeverSwingDB.cueConfigured end
     check(ForeverSwingDB.width == 300 and ForeverSwingDB.cue == 0.4, 'sanitize saved values')
     if blocked then
         check(not eventFrame.events.PLAYER_SWING, 'blocked event handled')
@@ -98,6 +99,7 @@ local function run(blocked)
     event('PLAYER_SWING', 3.6, 0)
     check(host.scripts.OnUpdate ~= nil, 'main-hand timer started')
     check(main.textures[2].shown and main.textures[3].shown, 'reference zone and line visible')
+    check(main.textures[2].layer == 'OVERLAY' and main.textures[3].sublayer == 1, 'cue renders above fill')
     SlashCmdList.FOREVERSWING('cue 0')
     host.scripts.OnUpdate(host, 0.1)
     check(not main.textures[2].shown and not main.textures[3].shown, 'cue off hides zone and line')
@@ -141,6 +143,12 @@ local function run(blocked)
     SlashCmdList.FOREVERSWING('reset')
     check(ForeverSwingDB.cue == 0.4 and not ForeverSwingDB.offhand, 'reset defaults')
 end
+local cue, configured = run(false, {cue=0}, true)
+check(cue == 0.4 and configured, 'legacy disabled default migrates once')
+cue = run(false, {cue=0, cueConfigured=true}, true)
+check(cue == 0, 'explicit disable survives reload')
+cue = run(false, {cue=0.7}, true)
+check(cue == 0.7, 'custom nonzero cue preserved')
 run(false)
 run(true)
 print('PASS: ' .. count .. ' checks (model and mocked client integration)')

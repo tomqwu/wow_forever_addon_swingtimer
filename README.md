@@ -34,7 +34,7 @@ abilities. `/fswing cue 0.4` enables the reference marker (default for new insta
 
 ## Validation
 
-Lua syntax checks and 47 model/mock-client checks pass. Live in-game combat,
+Lua syntax checks and 51 model/mock-client checks pass. Live in-game combat,
 dungeon and PvP validation is still pending.
 
 Run from the repository root with Lua installed:

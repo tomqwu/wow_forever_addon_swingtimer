@@ -17,6 +17,12 @@ end
 local function Normalize()
     if type(ForeverSwingDB) ~= "table" then ForeverSwingDB = {} end
     db = ForeverSwingDB
+    -- Older releases defaulted cue to zero without recording user intent.
+    -- Restore the requested marker once; subsequent explicit zero is preserved.
+    if db.cueConfigured ~= true then
+        if db.cue == 0 then db.cue = 0.4 end
+        db.cueConfigured = true
+    end
     for key, value in pairs(defaults) do
         if type(db[key]) ~= type(value) then db[key] = value end
     end
@@ -66,6 +72,7 @@ local function Idle(bar, text)
     bar.time:SetText(text or "Ready")
     bar.marker:Hide()
     bar.zone:Hide()
+    bar.cueLabel:Hide()
     bar.fill:SetStatusBarColor(0.85, 0.66, 0.22)
 end
 local function Layout()
@@ -91,16 +98,22 @@ local function NewBar(label)
     bg:SetAllPoints()
     bg:SetColorTexture(0.035, 0.035, 0.05, 0.88)
     local title = fill:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    title:SetDrawLayer("OVERLAY", 3)
     title:SetPoint("LEFT", 7, 0)
     title:SetText(label)
     local time = fill:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    time:SetDrawLayer("OVERLAY", 3)
     time:SetPoint("RIGHT", -7, 0)
-    local zone = fill:CreateTexture(nil, "ARTWORK")
-    zone:SetColorTexture(0.2, 0.9, 0.45, 0.22)
-    local marker = fill:CreateTexture(nil, "OVERLAY")
-    marker:SetColorTexture(0.3, 1, 0.6, 0.95)
-    marker:SetWidth(2)
-    local bar = { fill = fill, time = time, marker = marker, zone = zone, state = {} }
+    local zone = fill:CreateTexture(nil, "OVERLAY", nil, 0)
+    zone:SetColorTexture(0.1, 1, 0.35, 0.5)
+    local marker = fill:CreateTexture(nil, "OVERLAY", nil, 1)
+    marker:SetColorTexture(0.65, 1, 0.75, 1)
+    marker:SetWidth(3)
+    local cueLabel = fill:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    cueLabel:SetDrawLayer("OVERLAY", 3)
+    cueLabel:SetPoint("BOTTOM", marker, "TOP", 0, 2)
+    cueLabel:SetTextColor(0.65, 1, 0.75)
+    local bar = { fill = fill, time = time, marker = marker, zone = zone, cueLabel = cueLabel, state = {} }
     Idle(bar, "Waiting for swing")
     return bar
 end
@@ -129,7 +142,9 @@ local function Render()
                 bar.zone:SetPoint("TOPRIGHT", bar.fill, "TOPRIGHT", 0, 0)
                 bar.zone:SetSize(db.width * cue / bar.state.duration, db.height)
                 bar.zone:Show()
-            else bar.marker:Hide(); bar.zone:Hide() end
+                bar.cueLabel:SetFormattedText("%.1fs", cue)
+                bar.cueLabel:Show()
+            else bar.marker:Hide(); bar.zone:Hide(); bar.cueLabel:Hide() end
             if cue > 0 and remaining <= cue then
                 bar.fill:SetStatusBarColor(0.2, 0.85, 0.48)
             else bar.fill:SetStatusBarColor(i == 1 and 0.85 or 0.35, 0.66, i == 1 and 0.22 or 0.9) end
@@ -280,7 +295,7 @@ SlashCmdList.FOREVERSWING = function(message)
             Say(command .. " must be between " .. low .. " and " .. high); return
         end
         db[command] = value; Layout()
-        if command == "cue" then Say("Personal cue: " .. value .. "s. Not a verified seal-twist window.") end
+        if command == "cue" then db.cueConfigured = true; Say("Personal cue: " .. value .. "s. Not a verified seal-twist window.") end
     elseif command == "test" then
         Clear(); preview = true; UpdateOpacity()
         Start(1, 3.6)
@@ -291,8 +306,9 @@ SlashCmdList.FOREVERSWING = function(message)
         Clear("Waiting for swing"); Layout()
     elseif command == "status" then
         local version, build, _, interface = GetBuildInfo()
-        Say("v0.2.0 | client " .. tostring(version) .. " build " .. tostring(build) .. " interface " .. tostring(interface))
+        Say("v0.2.1 | client " .. tostring(version) .. " build " .. tostring(build) .. " interface " .. tostring(interface))
         Say("Native event: " .. (supported and "registered" or "unavailable") .. "; melee events: " .. eventCount)
+        Say("Cue: " .. db.cue .. "s" .. (db.cue == 0 and " (disabled; /fswing cue 0.4 to enable)" or " (enabled)"))
         Say(reason or "No API restriction observed. Live combat validation still requires actual swings.")
     else
         Say("/fswing unlock | lock | test | reset | status")
