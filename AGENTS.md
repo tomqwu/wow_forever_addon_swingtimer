@@ -51,3 +51,11 @@ are beta until actual in-game validation justifies changing the release type.
 Never print or retrieve the secret value. If game version 1.60.x is unavailable,
 report the blocker rather than marking the addon compatible with another branch.
 If a POST has an uncertain outcome, check CurseForge Files before retrying.
+
+## Forever seal-twisting semantics
+
+Twist of Light carries a replaced seal through an Echo into the next melee
+attack. Do not present the old 0.4-second catch window as a Forever requirement.
+Cues default off, are labeled as personal references, and must never imply that
+an Echo is ready or a twist succeeded. Version 0.2.2 migrates the old promoted
+0.4-second setting once; preserve explicit choices after that migration.

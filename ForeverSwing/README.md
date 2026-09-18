@@ -1,4 +1,4 @@
-# ForeverSwing 0.2.1
+# ForeverSwing 0.2.2
 
 A small, standalone melee swing-bar addon for World of Warcraft: Forever beta
 1.60.1 (69893). Main-hand countdown, optional off-hand countdown, movable frame,
@@ -26,15 +26,20 @@ returns to Ready; it does not pretend another swing happened.
 - `/fswing offhand on` or `off` — second melee bar (off by default for Paladin).
 - `/fswing width 350` — width from 120 to 800.
 - `/fswing scale 1.2` — scale from 0.5 to 2.
-- `/fswing cue 0.4` — line and shaded reference area in the final 0.4 seconds (new-install default).
-- `/fswing cue 0` — disable the cue.
+- `/fswing cue 0.4` — opt in to a personal reference area; not a required Forever twist window.
+- `/fswing cue 0` — disable the cue (default and recommended for Forever).
 - `/fswing reset` — restore addon settings.
 - `/fswing status` — client build/interface, event availability and received count.
 
-Version 0.2.1 repairs the old `cue = 0` default once, enabling the 0.4-second
-reference. Custom nonzero cues are preserved. An explicit `/fswing cue 0` after
-this update remains disabled across reloads. The brighter green area and labeled
-marker render above the progress fill for the full active swing cycle.
+Version 0.2.2 removes the old 0.4-second cue once on upgrade, including the cue
+previously enabled automatically by 0.2.1. Other nonzero custom cue values are
+preserved. New installations and resets have no cue. If you explicitly choose
+`/fswing cue 0.4` after this migration, it remains saved as a personal reference.
+
+Twist of Light generates an Echo for the next melee attack; its supported design
+does not require catching the last 0.4 seconds. The bar is an attack countdown,
+not an Echo-ready indicator or rotation recommendation. Custom markers are labeled
+“Cue” and are off by default.
 
 The optional cue is YOUR timing preference, not a confirmed Forever seal-twist
 window. This addon does not detect equipped seals, Echo consumption, successful
@@ -74,7 +79,7 @@ Findings:
 ## Validation and limits
 
 - `luac -p` syntax validation passed for both Lua files.
-- 51 local model/mock-client checks passed. They cover countdown math,
+- 56 local model/mock-client checks passed. They cover countdown math,
   invalid/secret payloads, ranged exclusion, main/off-hand separation,
   range semantics, expiry without free-running, equipment changes, demo
   replacement, saved-setting validation, and blocked event registration.

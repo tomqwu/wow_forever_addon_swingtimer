@@ -1,7 +1,7 @@
 local addon, NS = ...
 local Core = NS.Core
 local defaults = { x = 0, y = -160, width = 300, height = 24, scale = 1,
-    locked = true, offhand = false, cue = 0.4, oocalpha = 0.15 }
+    locked = true, offhand = false, cue = 0, oocalpha = 0.15 }
 local db, host, bars, supported, reason, preview
 local inCombat, fader, opacity, fadeTarget = false, nil, 1, nil
 local eventCount = 0
@@ -17,12 +17,14 @@ end
 local function Normalize()
     if type(ForeverSwingDB) ~= "table" then ForeverSwingDB = {} end
     db = ForeverSwingDB
-    -- Older releases defaulted cue to zero without recording user intent.
-    -- Restore the requested marker once; subsequent explicit zero is preserved.
-    if db.cueConfigured ~= true then
-        if db.cue == 0 then db.cue = 0.4 end
-        db.cueConfigured = true
+    -- Forever's Twist of Light uses a next-attack Echo, not a 0.4s catch.
+    -- Remove the previously promoted 0.4s cue once, keeping other custom values.
+    -- After this migration, even an explicitly chosen 0.4s cue survives reload.
+    if db.cuePolicyVersion ~= 1 then
+        if db.cue == 0.4 then db.cue = 0 end
+        db.cuePolicyVersion = 1
     end
+    db.cueConfigured = nil
     for key, value in pairs(defaults) do
         if type(db[key]) ~= type(value) then db[key] = value end
     end
@@ -31,7 +33,7 @@ local function Normalize()
     db.width = Number(db.width, 300, 120, 800)
     db.height = Number(db.height, 24, 16, 60)
     db.scale = Number(db.scale, 1, 0.5, 2)
-    db.cue = Number(db.cue, 0.4, 0, 3)
+    db.cue = Number(db.cue, 0, 0, 3)
     db.oocalpha = Number(db.oocalpha, 0.15, 0, 1)
 end
 -- Separate fade updates from swing updates so leaving combat can clear timing
@@ -142,7 +144,7 @@ local function Render()
                 bar.zone:SetPoint("TOPRIGHT", bar.fill, "TOPRIGHT", 0, 0)
                 bar.zone:SetSize(db.width * cue / bar.state.duration, db.height)
                 bar.zone:Show()
-                bar.cueLabel:SetFormattedText("%.1fs", cue)
+                bar.cueLabel:SetFormattedText("Cue %.1fs", cue)
                 bar.cueLabel:Show()
             else bar.marker:Hide(); bar.zone:Hide(); bar.cueLabel:Hide() end
             if cue > 0 and remaining <= cue then
@@ -295,7 +297,7 @@ SlashCmdList.FOREVERSWING = function(message)
             Say(command .. " must be between " .. low .. " and " .. high); return
         end
         db[command] = value; Layout()
-        if command == "cue" then db.cueConfigured = true; Say("Personal cue: " .. value .. "s. Not a verified seal-twist window.") end
+        if command == "cue" then db.cuePolicyVersion = 1; Say("Personal cue: " .. value .. "s. Optional reference only; Twist of Light does not need a 0.4s catch.") end
     elseif command == "test" then
         Clear(); preview = true; UpdateOpacity()
         Start(1, 3.6)
@@ -306,13 +308,13 @@ SlashCmdList.FOREVERSWING = function(message)
         Clear("Waiting for swing"); Layout()
     elseif command == "status" then
         local version, build, _, interface = GetBuildInfo()
-        Say("v0.2.1 | client " .. tostring(version) .. " build " .. tostring(build) .. " interface " .. tostring(interface))
+        Say("v0.2.2 | client " .. tostring(version) .. " build " .. tostring(build) .. " interface " .. tostring(interface))
         Say("Native event: " .. (supported and "registered" or "unavailable") .. "; melee events: " .. eventCount)
-        Say("Cue: " .. db.cue .. "s" .. (db.cue == 0 and " (disabled; /fswing cue 0.4 to enable)" or " (enabled)"))
+        Say("Cue: " .. db.cue .. "s" .. (db.cue == 0 and " (off; recommended for Forever)" or " (custom reference)"))
         Say(reason or "No API restriction observed. Live combat validation still requires actual swings.")
     else
         Say("/fswing unlock | lock | test | reset | status")
         Say("/fswing offhand on|off | cue 0..3 | width 120..800 | scale 0.5..2 | oocalpha 0..1")
-        Say("Cue defaults to 0.4s. It is a personal marker, not a seal/proc detector.")
+        Say("Cues default OFF. Twist of Light uses a next-attack Echo; no 0.4s catch required.")
     end
 end

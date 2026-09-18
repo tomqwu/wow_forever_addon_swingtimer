@@ -9,7 +9,7 @@ Uses the native `PLAYER_SWING` event rather than combat-log parsing.
 - Movable, resizable frame with saved settings
 - Smooth fade to 15% opacity outside combat; immediate visibility in combat
 - `/fswing oocalpha 0` for fully hidden bars outside combat
-- Out-of-range dimming, a 0.4-second reference line and shaded end-of-swing area
+- Out-of-range dimming and optional custom reference cues (off by default)
 - Guards unavailable APIs and restricted values
 - No external addon dependencies
 
@@ -28,13 +28,16 @@ Attack a hostile target to test real swing events.
 
 Forever's Twist of Light uses a seal echo on the next swing. This addon does not
 assume the old 0.4-second timing window, detect successful twists, or automate
-abilities. `/fswing cue 0.4` enables the reference marker (default for new installs); `/fswing cue 0` disables it.
+abilities. No last-0.4-second catch is required for the announced Twist of Light
+Echo mechanic. Cues are off by default. Version 0.2.2 clears the previously
+promoted 0.4-second setting once on upgrade. `/fswing cue 0.4` can still enable a
+personal reference afterward; `/fswing cue 0` disables it.
 
 [Full commands, API research, sources and limitations](ForeverSwing/README.md)
 
 ## Validation
 
-Lua syntax checks and 51 model/mock-client checks pass. Live in-game combat,
+Lua syntax checks and 56 model/mock-client checks pass. Live in-game combat,
 dungeon and PvP validation is still pending.
 
 Run from the repository root with Lua installed:
