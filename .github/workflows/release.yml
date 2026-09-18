@@ -44,10 +44,11 @@ jobs:
             echo "Release v$VERSION already exists. Bump the TOC version for each fix or feature."
             exit 1
           fi
+          python3 scripts/release_notes.py --version "$VERSION" > dist/release-notes.md
           gh release create "ForeverUtilities-v$VERSION" "$ARCHIVE" \
             --target "$GITHUB_SHA" \
             --title "ForeverUtilities v$VERSION" \
-            --generate-notes
+            --notes-file dist/release-notes.md
   curseforge:
     needs: release
     if: needs.release.outputs.required == 'true'

@@ -43,3 +43,13 @@ or exposing token values. Verify both release jobs and the upload receipt.
 Never retry an uncertain upload POST before checking project Files.
 
 Do not publish ignored addons.local.json entries or unrelated local files.
+
+## Descriptions and release copy
+
+Maintain docs/curseforge-description.md as the customer-facing overview. Keep the
+root and packaged README aligned. Add exact-version highlights to docs/changelog.md
+for every addon release. release_notes.py combines them for the GitHub release;
+the CurseForge uploader uses that body as its file changelog. Project-page edits
+are separate: do not claim the website description changed merely because an
+upload succeeded. With no target the indicator uses 20% opacity; selecting a
+target or unlocking restores full visibility without idle polling.

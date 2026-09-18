@@ -38,6 +38,7 @@ function methods:CreateTexture() return setmetatable({}, {__index=methods}) end
 function methods:CreateFontString() local f=setmetatable({}, {__index=methods});self.label=f;return f end
 function methods:SetText(t) self.text=t end
 function methods:SetShown(v) self.shown=v end
+function methods:SetAlpha(v) self.alpha=v end
 setmetatable(methods,{__index=function() return function() end end})
 CreateFrame=function() local f=setmetatable({scripts={},events={}},{__index=methods});frames[#frames+1]=f;return f end
 local class,target,dead,distance='HUNTER',true,false,20
@@ -54,7 +55,7 @@ GetSpellBookItemInfo=function(slot) return {spellID=9000+slot} end,IsSpellKnown=
 C_Spell={GetSpellInfo=function(id) return metadata[id-9000] end,
 IsRangedAutoAttackSpell=function(id) return id==9001 end,IsSpellHarmful=function() return true end,
 IsSpellInRange=function(id) local s=metadata[id-9000];return distance>=s.minRange and distance<=s.maxRange end}
-local db={enabled=true}
+local db={enabled=true,locked=true}
 local f=NS.Range.Create({},db)
 check(f.label.text:find('Shooting',1,true),'discovered auto shot')
 distance=6;f.scripts.OnUpdate(f,0.15)
@@ -63,6 +64,13 @@ distance=50;f.scripts.OnUpdate(f,0.15)
 check(f.label.text:find('>35 yd',1,true),'far target')
 target=false;f.scripts.OnEvent(f,'PLAYER_TARGET_CHANGED')
 check(not f.scripts.OnUpdate and f.label.text=='No target','no target stops polling')
+check(f.alpha==0.2,'no target dims indicator')
+db.locked=false;f.Refresh()
+check(f.alpha==1 and not f.scripts.OnUpdate,'unlock keeps no-target UI visible without polling')
+db.locked=true;f.Refresh()
+check(f.alpha==0.2,'locking restores no-target dimming')
+target=true;f.scripts.OnEvent(f,'PLAYER_TARGET_CHANGED')
+check(f.alpha==1,'acquiring target restores full visibility')
 target=true;dead=true;f.Refresh()
 check(not f.scripts.OnUpdate,'dead target stops polling')
 dead=false;db.enabled=false;f.Refresh()

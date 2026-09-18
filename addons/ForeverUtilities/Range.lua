@@ -148,7 +148,9 @@ function Range.Create(host, db)
         frame:SetScript('OnUpdate',nil)
         frame:SetShown(db.enabled)
         if not db.enabled then return end
-        if Call(UnitExists,'target')~=true then Paint('unknown','No target'); return end
+        local hasTarget=Call(UnitExists,'target')==true
+        frame:SetAlpha((hasTarget or db.locked==false) and 1 or 0.2)
+        if not hasTarget then Paint('unknown','No target'); return end
         if Call(UnitCanAttack,'player','target')~=true or Call(UnitIsDead,'target')~=false then
             Paint('unknown','No attackable target'); return
         end
