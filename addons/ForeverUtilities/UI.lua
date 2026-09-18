@@ -31,7 +31,7 @@ end
 local function Initialize()
     Normalize()
     host=CreateFrame('Frame','ForeverUtilitiesFrame',UIParent)
-    host:SetSize(300,24)
+    host:SetSize(400,56)
     host:SetFrameStrata('MEDIUM')
     host:SetMovable(true)
     host:SetClampedToScreen(true)
@@ -70,7 +70,7 @@ SlashCmdList.FOREVERUTILITIES=function(message)
         for key,value in pairs(defaults) do db[key]=value end
         Layout()
     elseif command=='status' then
-        Say('v0.1.1 | '..(host and (db.enabled and 'enabled' or 'disabled') or 'unavailable'))
+        Say('v0.1.2 | '..(host and (db.enabled and 'enabled' or 'disabled') or 'unavailable'))
         Say('Yards are spell-range brackets, not exact distance. Live game validation pending.')
     else Say('/futils unlock | lock | on | off | scale 0.5..2 | reset | status') end
 end

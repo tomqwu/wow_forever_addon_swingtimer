@@ -3,7 +3,7 @@ local Core = NS.Core
 local Range = {}
 NS.Range = Range
 local colors = { melee={1,0.65,0.15}, close={1,0.3,0.1}, shoot={0.2,1,0.35},
-    far={1,0.15,0.2}, unknown={0.6,0.6,0.6} }
+    far={1,0.15,0.2}, unknown={0.8,0.8,0.85} }
 local function Call(fn, ...)
     if type(fn) ~= 'function' then return nil end
     local ok, value = pcall(fn, ...)
@@ -44,13 +44,29 @@ function Range.Measure(probes, melee, ranged, shot)
 end
 function Range.Create(host, db)
     local frame = CreateFrame('Frame', 'ForeverUtilitiesIndicator', host)
-    frame:SetSize(300,24)
+    frame:SetSize(400,56)
     frame:SetPoint('TOPLEFT',host,'TOPLEFT',0,0)
-    local icon = frame:CreateTexture(nil,'ARTWORK')
-    icon:SetSize(22,22); icon:SetPoint('LEFT')
+    -- Keep the readout legible against bright terrain and busy combat effects.
+    local background = frame:CreateTexture(nil,'BACKGROUND')
+    background:SetAllPoints(frame)
+    background:SetColorTexture(0.015,0.02,0.03,0.92)
+    local accent = frame:CreateTexture(nil,'ARTWORK',nil,0)
+    accent:SetPoint('TOPLEFT',frame,'TOPLEFT',0,0)
+    accent:SetPoint('BOTTOMLEFT',frame,'BOTTOMLEFT',0,0)
+    accent:SetWidth(4)
+    local iconBorder = frame:CreateTexture(nil,'ARTWORK',nil,0)
+    iconBorder:SetSize(44,44); iconBorder:SetPoint('LEFT',frame,'LEFT',10,0)
+    local icon = frame:CreateTexture(nil,'ARTWORK',nil,1)
+    icon:SetSize(38,38); icon:SetPoint('CENTER',iconBorder,'CENTER',0,0)
     icon:SetTexture('Interface\\Icons\\Ability_Marksmanship')
-    local label = frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall')
-    label:SetPoint('LEFT',icon,'RIGHT',7,0)
+    local label = frame:CreateFontString(nil,'OVERLAY','GameFontNormalLarge')
+    label:SetFont(STANDARD_TEXT_FONT or 'Fonts\\FRIZQT__.TTF',18,'OUTLINE')
+    label:SetShadowColor(0,0,0,1)
+    label:SetShadowOffset(1,-1)
+    label:SetPoint('LEFT',iconBorder,'RIGHT',12,0)
+    label:SetPoint('RIGHT',frame,'RIGHT',-12,0)
+    label:SetJustifyH('LEFT')
+    label:SetWordWrap(false)
     local spells, shot, elapsed = {}, nil, 0
     local function Discover()
         spells, shot = {}, nil
@@ -82,7 +98,12 @@ function Range.Create(host, db)
         end
     end
     local function Paint(state,text)
-        local c=colors[state]; icon:SetVertexColor(unpack(c)); label:SetTextColor(unpack(c)); label:SetText(text)
+        local c=colors[state]
+        icon:SetVertexColor(unpack(c))
+        iconBorder:SetColorTexture(c[1],c[2],c[3],1)
+        accent:SetColorTexture(c[1],c[2],c[3],1)
+        label:SetTextColor(1,1,1,1)
+        label:SetText(text)
     end
     local function Update()
         local probes={}

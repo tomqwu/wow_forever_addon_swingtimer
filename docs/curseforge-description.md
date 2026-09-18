@@ -42,3 +42,7 @@ client; live gameplay validation is still pending. Please report the client
 build and any errors when submitting an issue.
 
 Source and issues: https://github.com/tomqwu/wow_forever_addon_swingtimer
+
+The distance readout uses a dark panel, large outlined white text, and a larger
+icon with a solid range-colored border for visibility against terrain. Use
+`/futils scale 1.2` to enlarge it further; existing position and scale are preserved.

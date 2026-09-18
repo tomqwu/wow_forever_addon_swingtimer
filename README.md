@@ -94,3 +94,7 @@ API source used for the Forever 1.60.1 baseline:
 https://github.com/Gethe/wow-ui-source/tree/4d5d706b8e01c5ebe01c8dd9b7a07151d8d37069/Interface/AddOns/Blizzard_APIDocumentationGenerated
 
 Automated tests use a simulated client. Live gameplay validation remains pending.
+
+The distance readout uses a dark panel, large outlined white text, and a larger
+icon with a solid range-colored border for visibility against terrain. Use
+`/futils scale 1.2` to enlarge it further; existing position and scale are preserved.
