@@ -13,8 +13,8 @@ measure({{min=0,max=5,inside=true}},true,false,'melee','<=5 yd')
 measure({{min=0,max=5,inside=false},{min=0,max=35,inside=true}},false,false,'close','~5-8 yd')
 measure({{min=8,max=35,inside=true}},false,true,'shoot','~8-35 yd')
 measure({{min=0,max=35,inside=false}},false,false,'far','>35 yd')
-measure({},false,false,'unknown','Range unavailable')
-measure({{min=8,max=35,inside=false}},false,false,'unknown')
+measure({},false,false,'out','Out of range')
+measure({{min=8,max=35,inside=false}},false,false,'out')
 measure({{min=0,max=35,inside=secret}},secret,secret,'unknown')
 measure({{min=0,max=5,inside=true},{min=0,max=35,inside=false}},false,false,'unknown')
 measure({},nil,nil,'unknown')
@@ -34,7 +34,11 @@ local frames={}
 local methods={}
 function methods:SetScript(k,v) self.scripts[k]=v end
 function methods:RegisterEvent(e) self.events[e]=true end
-function methods:CreateTexture() return setmetatable({}, {__index=methods}) end
+function methods:CreateTexture()
+ local texture=setmetatable({}, {__index=methods})
+ self.textures=rawget(self,"textures") or {};table.insert(self.textures,texture);return texture
+end
+function methods:SetColorTexture(r,g,b,a) self.color={r,g,b,a} end
 function methods:CreateFontString() local f=setmetatable({}, {__index=methods});self.label=f;return f end
 function methods:SetText(t) self.text=t end
 function methods:SetShown(v) self.shown=v end
@@ -92,6 +96,20 @@ check(f.label.text:find('Shooting',1,true),'spellbook fallback classifies shooti
 check(f.Status():find('nil/nil',1,true),'diagnostics report missing native checks')
 distance=50;f.scripts.OnUpdate(f,0.15)
 check(f.label.text:find('Too far',1,true),'spellbook fallback classifies far')
+-- Regression: a broad spell supplies an upper bound but Auto Shot metadata is absent.
+metadata[4]={minRange=0,maxRange=100}
+C_SpellBook.GetSpellBookSkillLineInfo=function() return {itemIndexOffset=0,numSpellBookItems=4} end
+C_Spell.IsRangedAutoAttackSpell=function() return false end
+C_SwingTimer.IsTargetWithinSwingRange=function() return false end
+distance=50
+f=NS.Range.Create({},db)
+check(f.label.text:find('Out of range | ~35-100 yd',1,true),'negative attack check overrides blue bracket')
+check(f.textures[2].color[1]==1 and f.textures[2].color[2]==0.15,'out-of-range accent is actually red')
+check(f.textures[3].color[1]==1 and f.textures[3].color[2]==0.15,'out-of-range icon border is actually red')
+C_SwingTimer.IsTargetWithinSwingRange=function() return nil end
+f.Refresh()
+check(f.label.text:find('Distance',1,true),'unavailable attack check is not invented as false')
+check(f.textures[2].color[1]==0.3 and f.textures[2].color[3]==1,'genuinely unclassified bracket remains blue')
 class='HUNTER';C_Spell=nil;C_SpellBook=nil
 f=NS.Range.Create({},db)
 check(f.label.text:find('Range unavailable',1,true),'missing APIs degrade safely')
