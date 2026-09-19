@@ -1,5 +1,7 @@
 # Forever - Hunter's Friend
 
+<p align="center"><img src="assets/branding/hunters-friend-logo.png" width="256" alt="Hunter’s Friend — golden lynx and emerald bow"></p>
+
 **Your range, ammunition, and target awareness in one compact hunter bar.**
 
 Built for hunters in **World of Warcraft: Forever**, Hunter's Friend shows what
