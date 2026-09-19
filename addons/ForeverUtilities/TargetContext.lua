@@ -69,3 +69,11 @@ function Context.AmmoCount()
     if not Core.IsNumber(count) or count<0 then return nil end
     return math.floor(count)
 end
+
+function Context.PetNeedsMend(unit)
+    if Call(UnitIsUnit,unit,'pet')~=true or Call(UnitIsDead,'pet')~=false then return false end
+    local health=Call(UnitHealth,'pet')
+    local maximum=Call(UnitHealthMax,'pet')
+    return Core.IsNumber(health) and Core.IsNumber(maximum)
+        and maximum>0 and health>0 and health/maximum<=0.30
+end

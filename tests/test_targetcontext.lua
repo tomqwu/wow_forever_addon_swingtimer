@@ -69,4 +69,20 @@ check(C.AmmoCount()==nil,'failed API hidden')
 C_Item=nil;GetItemCount=function() return 9 end
 check(C.AmmoCount()==9,'legacy count fallback')
 GetInventorySlotInfo=nil;check(C.AmmoCount()==nil,'missing ammo slot API hidden')
+UnitIsUnit=function(unit,other) return unit=='targettarget' and other=='pet' end
+UnitIsDead=function() return false end
+local health=30
+UnitHealth=function() return health end
+UnitHealthMax=function() return 100 end
+check(C.PetNeedsMend('targettarget'),'pet at exactly 30 percent')
+health=31;check(not C.PetNeedsMend('targettarget'),'pet above threshold')
+health=29;check(C.PetNeedsMend('targettarget'),'pet below threshold')
+check(not C.PetNeedsMend('target'),'other target is not own pet')
+health=0;check(not C.PetNeedsMend('targettarget'),'dead pet does not need mend')
+health=secret;check(not C.PetNeedsMend('targettarget'),'secret health is not used')
+health=30;UnitHealthMax=function() return 0 end
+check(not C.PetNeedsMend('targettarget'),'zero maximum guarded')
+UnitHealthMax=function() return 100 end
+UnitIsUnit=function() return secret end
+check(not C.PetNeedsMend('targettarget'),'restricted identity guarded')
 print('PASS: '..count..' target context checks')

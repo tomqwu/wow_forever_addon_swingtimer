@@ -230,4 +230,24 @@ C_Item.GetItemCount=function() return nil end;f.scripts.OnEvent(f,'BAG_UPDATE_DE
 check(f.labels[3].text=='','unavailable count clears stale value')
 db.enabled=false;f.Refresh()
 check(not f.events.BAG_UPDATE_DELAYED and not f.events.UNIT_INVENTORY_CHANGED,'disabled removes ammo events')
+db.enabled=true;db.showTargetTarget=true;UnitExists=function() return true end
+UnitIsDead=function() return false end
+SetPortraitTexture=function() end
+UnitIsUnit=function(unit,other) return unit=='targettarget' and other=='pet' end
+local petHealth=30
+UnitHealth=function() return petHealth end
+UnitHealthMax=function() return 100 end
+f.Refresh()
+local glow=f.textures[#f.textures-1]
+check(glow.shown,'low pet portrait highlighted')
+petHealth=31;f.scripts.OnEvent(f,'UNIT_HEALTH','pet')
+check(not glow.shown,'healing removes highlight immediately')
+petHealth=20;f.scripts.OnEvent(f,'UNIT_HEALTH','pet')
+check(glow.shown,'damage restores highlight')
+UnitIsUnit=function() return false end;f.scripts.OnEvent(f,'UNIT_TARGET','target')
+check(not glow.shown,'target switch clears old pet highlight')
+UnitExists=function() return false end;f.Refresh()
+check(not glow.shown,'target loss clears highlight')
+db.enabled=false;f.Refresh()
+check(not f.events.UNIT_HEALTH and not f.events.UNIT_MAXHEALTH and not f.events.UNIT_PET,'disabled removes pet events')
 print('PASS: '..count..' distance checks')

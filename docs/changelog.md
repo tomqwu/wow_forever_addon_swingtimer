@@ -1,3 +1,12 @@
+## 0.9.0
+
+- Highlights the target-of-target portrait with a red border when it shows your own pet at 30% health or below.
+- Updates immediately on pet health changes and clears after healing, pet replacement, or target changes.
+- Dead pets, other players’ pets, and restricted health readings do not trigger the reminder.
+- Visual Mend Pet reminder only; no automatic spell casting.
+
+Use `/reload` to apply the update.
+
 ## 0.8.2
 
 - Unlocking the bar no longer forces full opacity; dragging keeps the same visibility and updates as locked mode.

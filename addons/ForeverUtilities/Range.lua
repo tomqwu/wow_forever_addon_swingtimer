@@ -96,6 +96,9 @@ function Range.Create(host, db)
     label:SetHeight(44)
     label:SetJustifyH('LEFT')
     label:SetWordWrap(false)
+    local petHighlight=frame:CreateTexture(nil,'ARTWORK',nil,0)
+    petHighlight:SetSize(44,44);petHighlight:SetPoint('RIGHT',frame,'RIGHT',-9,0)
+    petHighlight:SetColorTexture(1,0.1,0.1,1);petHighlight:Hide()
     local portrait=frame:CreateTexture(nil,'ARTWORK',nil,1)
     portrait:SetSize(38,38);portrait:SetPoint('RIGHT',frame,'RIGHT',-12,0)
     portrait:Hide()
@@ -135,15 +138,18 @@ function Range.Create(host, db)
         if db.showTargetTarget==false then portrait:Hide() end
     end
     local function ClearContext()
-        portrait:Hide();portrait:SetTexture(nil);angleLabel:SetText('');label:SetWidth(322)
+        petHighlight:Hide();portrait:Hide();portrait:SetTexture(nil);angleLabel:SetText('');label:SetWidth(322)
     end
     local function UpdateContext()
         -- Clear first: an absent/restricted new unit must never retain the old portrait.
-        portrait:Hide();portrait:SetTexture(nil);label:SetWidth(322)
+        petHighlight:Hide();portrait:Hide();portrait:SetTexture(nil);label:SetWidth(322)
         if db.showTargetTarget~=false and Call(UnitExists,'targettarget')==true
             and type(SetPortraitTexture)=='function' then
             local ok=pcall(SetPortraitTexture,portrait,'targettarget')
-            if ok then portrait:Show();label:SetWidth(270) end
+            if ok then
+                portrait:Show();label:SetWidth(270)
+                petHighlight:SetShown(NS.TargetContext.PetNeedsMend('targettarget'))
+            end
         end
         if db.showAngle~=false then
             local angle=NS.TargetContext.ReadAngle()
@@ -230,7 +236,7 @@ function Range.Create(host, db)
     end
     local active=false
     local rangeEvents={'PLAYER_TARGET_CHANGED','SPELLS_CHANGED','PLAYER_ENTERING_WORLD',
-        'PLAYER_LEAVING_WORLD','PLAYER_DEAD','PLAYER_EQUIPMENT_CHANGED','UNIT_FLAGS','UNIT_TARGET','UNIT_NAME_UPDATE','UNIT_PORTRAIT_UPDATE','BAG_UPDATE_DELAYED','UNIT_INVENTORY_CHANGED','PLAYER_REGEN_DISABLED','PLAYER_REGEN_ENABLED'}
+        'PLAYER_LEAVING_WORLD','PLAYER_DEAD','PLAYER_EQUIPMENT_CHANGED','UNIT_FLAGS','UNIT_TARGET','UNIT_NAME_UPDATE','UNIT_PORTRAIT_UPDATE','BAG_UPDATE_DELAYED','UNIT_INVENTORY_CHANGED','PLAYER_REGEN_DISABLED','PLAYER_REGEN_ENABLED','UNIT_HEALTH','UNIT_MAXHEALTH','UNIT_PET'}
     local function Refresh()
         frame:SetScript('OnUpdate',nil)
         frame:SetShown(db.enabled)
@@ -263,6 +269,9 @@ function Range.Create(host, db)
     end
     frame:SetScript('OnEvent',function(_,event,unit)
         if not db.enabled then return end
+        if (event=='UNIT_HEALTH' or event=='UNIT_MAXHEALTH') and
+            (not Core.IsReadable(unit) or (unit~='pet' and unit~='targettarget')) then return end
+        if event=='UNIT_PET' and (not Core.IsReadable(unit) or unit~='player') then return end
         if event=='UNIT_INVENTORY_CHANGED' and (not Core.IsReadable(unit) or unit~='player') then return end
         if event=='BAG_UPDATE_DELAYED' or event=='UNIT_INVENTORY_CHANGED' then UpdateAmmo();return end
         if event=='UNIT_TARGET' and (not Core.IsReadable(unit) or unit~='target') then return end
