@@ -49,3 +49,23 @@ end
 function Context.Height(db)
     return 56
 end
+
+-- Count the selected ammo type carried by the player, excluding all bank storage.
+function Context.AmmoCount()
+    local slot=Call(GetInventorySlotInfo,'AmmoSlot')
+    if not Core.IsNumber(slot) or slot<0 then return nil end
+    if type(GetInventoryItemID)~='function' then return nil end
+    local ok,id=pcall(GetInventoryItemID,'player',slot)
+    if not ok or not Core.IsReadable(id) then return nil end
+    if id==nil then
+        if type(UnitClass)=='function' then
+            local classOK,_,class=pcall(UnitClass,'player')
+            if classOK and Core.IsReadable(class) and class=='HUNTER' then return 0 end
+        end
+        return nil
+    end
+    if not Core.IsNumber(id) or id<=0 then return nil end
+    local count=Call(C_Item and C_Item.GetItemCount or GetItemCount,id,false,false,false,false)
+    if not Core.IsNumber(count) or count<0 then return nil end
+    return math.floor(count)
+end

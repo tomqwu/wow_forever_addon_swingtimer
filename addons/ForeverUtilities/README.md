@@ -34,6 +34,11 @@ It follows character facing, not the camera, and hides when position/facing data
 is unavailable. Both features can be toggled in `/futils`. The bar stays 400 × 56.
 Angle is a direction measurement, not proof that an attack can hit.
 
+A small **Ammo: 123** reading beside the portrait counts your selected ammo type
+in carried inventory, excluding bank storage. It refreshes on inventory changes
+even without a target. Hunters with an empty ammo slot see a red **Ammo: 0**;
+unavailable readings and empty slots for other classes are hidden.
+
 ## Built for quick reads
 
 - **Readable during combat:** large outlined text, a dark background, and a bright colored icon border.

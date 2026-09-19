@@ -104,12 +104,22 @@ function Range.Create(host, db)
     angleLabel:SetJustifyH('LEFT');angleLabel:SetWordWrap(false)
     angleLabel:SetTextColor(0.9,0.93,1)
     angleLabel:SetPoint('TOPLEFT',frame,'TOPLEFT',66,-40)
+    local ammoLabel=frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall')
+    ammoLabel:SetFont(STANDARD_TEXT_FONT or 'Fonts\\FRIZQT__.TTF',12,'OUTLINE')
+    ammoLabel:SetJustifyH('RIGHT');ammoLabel:SetWordWrap(false);ammoLabel:SetSize(110,14)
+    local function UpdateAmmo()
+        local count=NS.TargetContext.AmmoCount()
+        ammoLabel:SetText(count and ('Ammo: '..count) or '')
+        if count==0 then ammoLabel:SetTextColor(1,0.25,0.2)
+        else ammoLabel:SetTextColor(0.9,0.93,1) end
+    end
     local function ContextLayout()
         frame:SetHeight(NS.TargetContext.Height(db))
         angleLabel:SetShown(db.showAngle~=false)
         local width=db.showTargetTarget~=false and 270 or 322
-        label:SetWidth(width);angleLabel:SetWidth(width)
-        label:SetHeight(db.showAngle~=false and 32 or 44)
+        label:SetWidth(width);angleLabel:SetWidth(width-115)
+        ammoLabel:ClearAllPoints();ammoLabel:SetPoint('TOPRIGHT',frame,'TOPRIGHT',db.showTargetTarget~=false and -64 or -12,-39)
+        label:SetHeight(32)
         if db.showTargetTarget==false then portrait:Hide() end
     end
     local function ClearContext()
@@ -208,7 +218,7 @@ function Range.Create(host, db)
     end
     local active=false
     local rangeEvents={'PLAYER_TARGET_CHANGED','SPELLS_CHANGED','PLAYER_ENTERING_WORLD',
-        'PLAYER_LEAVING_WORLD','PLAYER_DEAD','PLAYER_EQUIPMENT_CHANGED','UNIT_FLAGS','UNIT_TARGET','UNIT_NAME_UPDATE','UNIT_PORTRAIT_UPDATE'}
+        'PLAYER_LEAVING_WORLD','PLAYER_DEAD','PLAYER_EQUIPMENT_CHANGED','UNIT_FLAGS','UNIT_TARGET','UNIT_NAME_UPDATE','UNIT_PORTRAIT_UPDATE','BAG_UPDATE_DELAYED','UNIT_INVENTORY_CHANGED'}
     local function Refresh()
         frame:SetScript('OnUpdate',nil)
         frame:SetShown(db.enabled)
@@ -222,6 +232,7 @@ function Range.Create(host, db)
             for _,event in ipairs(rangeEvents) do frame:RegisterEvent(event) end
             active=true;Discover()
         end
+        UpdateAmmo()
         local hasTarget=Call(UnitExists,'target')==true
         frame:SetAlpha((hasTarget or db.locked==false) and 1 or 0.2)
         if not hasTarget then ClearContext(); Paint('unknown','No target'); return end
@@ -239,6 +250,8 @@ function Range.Create(host, db)
     end
     frame:SetScript('OnEvent',function(_,event,unit)
         if not db.enabled then return end
+        if event=='UNIT_INVENTORY_CHANGED' and (not Core.IsReadable(unit) or unit~='player') then return end
+        if event=='BAG_UPDATE_DELAYED' or event=='UNIT_INVENTORY_CHANGED' then UpdateAmmo();return end
         if event=='UNIT_TARGET' and (not Core.IsReadable(unit) or unit~='target') then return end
         if (event=='UNIT_NAME_UPDATE' or event=='UNIT_PORTRAIT_UPDATE') and (not Core.IsReadable(unit) or (unit~='target' and unit~='targettarget')) then return end
         if event=='UNIT_FLAGS' and (not Core.IsReadable(unit) or unit~='target') then return end

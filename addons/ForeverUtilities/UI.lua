@@ -99,7 +99,7 @@ local function OpenPanel()
             local id=definition.id
             panel.rows[id]=Button(list,definition.name,0,-(i-1)*36,200,function() Select(id) end)
         end
-        Text(panel,'v0.5.2  |  Settings are saved per utility.',20,-472,'GameFontHighlightSmall')
+        Text(panel,'v0.6.0  |  Settings are saved per utility.',20,-472,'GameFontHighlightSmall')
         if UISpecialFrames then table.insert(UISpecialFrames,'ForeverUtilitiesToolbox') end
     end
     panel:Show();Select(Modules.db.selectedModule)
@@ -128,7 +128,7 @@ SlashCmdList.FOREVERUTILITIES=function(message)
         db.scale=value;Modules.Apply('distance')
     elseif command=='reset' then Modules.Reset('distance')
     elseif command=='status' then
-        Say('v0.5.2 | Utilities: '..#Modules.list)
+        Say('v0.6.0 | Utilities: '..#Modules.list)
         for _,definition in ipairs(Modules.list) do
             Say(definition.name..': '..(Modules.Settings(definition.id).enabled and 'enabled' or 'disabled'))
             local instance=Modules.instances[definition.id]

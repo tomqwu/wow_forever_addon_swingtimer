@@ -49,4 +49,24 @@ check(C.TargetTarget()=='Target of target: Unavailable','restricted name')
 UnitName=function() error('unavailable') end
 check(C.TargetTarget()=='Target of target: Unavailable','failed name API')
 check(C.Height({})==56 and C.Height({showAngle=false})==56 and C.Height({showAngle=false,showTargetTarget=false})==56,'original height with any context options')
+GetInventorySlotInfo=function(name) assert(name=='AmmoSlot');return 0 end
+local ammoID=123
+GetInventoryItemID=function() return ammoID end
+C_Item={GetItemCount=function(id,bank,uses,reagent,account)
+    check(id==123 and not bank and not uses and not reagent and not account,'selected ammo excludes banks')
+    return 2456
+end}
+check(C.AmmoCount()==2456,'total carried selected ammo')
+ammoID=nil;UnitClass=function() return 'Hunter','HUNTER' end
+check(C.AmmoCount()==0,'hunter empty ammo slot is zero')
+UnitClass=function() return 'Mage','MAGE' end
+check(C.AmmoCount()==nil,'non ammo class empty slot hidden')
+ammoID=secret;check(C.AmmoCount()==nil,'restricted item ID hidden')
+ammoID=123;C_Item.GetItemCount=function() return secret end
+check(C.AmmoCount()==nil,'restricted count hidden')
+C_Item.GetItemCount=function() error('unavailable') end
+check(C.AmmoCount()==nil,'failed API hidden')
+C_Item=nil;GetItemCount=function() return 9 end
+check(C.AmmoCount()==9,'legacy count fallback')
+GetInventorySlotInfo=nil;check(C.AmmoCount()==nil,'missing ammo slot API hidden')
 print('PASS: '..count..' target context checks')

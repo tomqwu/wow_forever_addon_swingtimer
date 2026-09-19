@@ -193,4 +193,19 @@ db.showTargetTarget=false;db.showAngle=false;f.Refresh();f.scripts.OnUpdate(f,0.
 check(queries==0,'disabled context does not query APIs')
 db.enabled=false;f.Refresh()
 check(not f.events.UNIT_TARGET and not f.events.UNIT_PORTRAIT_UPDATE and not f.scripts.OnUpdate,'disable removes context listeners')
+db.enabled=true;UnitExists=function() return false end
+GetInventorySlotInfo=function() return 0 end
+GetInventoryItemID=function() return 123 end
+local ammo=500
+C_Item={GetItemCount=function() return ammo end}
+f.Refresh()
+check(f.labels[3].text=='Ammo: 500' and not f.scripts.OnUpdate,'ammo visible without target or polling')
+ammo=499;f.scripts.OnEvent(f,'BAG_UPDATE_DELAYED')
+check(f.labels[3].text=='Ammo: 499','bag event refreshes ammo')
+ammo=200;f.scripts.OnEvent(f,'UNIT_INVENTORY_CHANGED','player')
+check(f.labels[3].text=='Ammo: 200','equipped ammo change refreshes count')
+C_Item.GetItemCount=function() return nil end;f.scripts.OnEvent(f,'BAG_UPDATE_DELAYED')
+check(f.labels[3].text=='','unavailable count clears stale value')
+db.enabled=false;f.Refresh()
+check(not f.events.BAG_UPDATE_DELAYED and not f.events.UNIT_INVENTORY_CHANGED,'disabled removes ammo events')
 print('PASS: '..count..' distance checks')

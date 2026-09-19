@@ -1,3 +1,12 @@
+## 0.6.0
+
+- Added a small ammo count near the right side of the compact bar, beside the portrait.
+- Counts carried ammunition of the selected type, excluding bank storage.
+- Inventory events refresh the count even without a target, without adding idle polling.
+- Empty hunter ammo slots show a red zero; missing or restricted data clears the reading.
+
+Use `/reload` to apply the update. The bar remains 400 × 56.
+
 ## 0.5.2
 
 - Replaced target-of-target wording with a portrait on the right, opposite the weapon icon.
