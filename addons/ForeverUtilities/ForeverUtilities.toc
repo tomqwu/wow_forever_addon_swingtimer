@@ -1,11 +1,10 @@
 ## Interface: 16001
-## Title: Forever Utilities
-## Notes: Lightweight Forever utilities: target distance brackets and a colored range icon.
+## Title: Forever - Hunter's Friend
+## Notes: Hunter range, ammo count, target-of-target portrait, and facing angle for WoW Forever.
 ## Author: Codex
-## Version: 0.6.0
+## Version: 0.7.0
 ## SavedVariables: ForeverUtilitiesDB
 Core.lua
-Modules.lua
 TargetContext.lua
 Range.lua
 Distance.lua

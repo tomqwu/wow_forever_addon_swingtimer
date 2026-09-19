@@ -118,7 +118,7 @@ def main():
         print('Dry run complete; no upload performed.')
         return
     metadata = {'changelog': release['body'] or release['url'],
-                'changelogType': 'markdown', 'displayName': 'Forever Utilities ' + args.tag.removeprefix('ForeverUtilities-'),
+                'changelogType': 'markdown', 'displayName': "Forever - Hunter's Friend " + args.tag.removeprefix('ForeverUtilities-'),
                 'gameVersions': [version_id], 'releaseType': 'beta'}
     data, content_type = multipart(metadata, archive)
     # Deliberately no retry for a non-idempotent upload POST.

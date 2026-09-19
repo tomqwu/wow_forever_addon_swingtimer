@@ -47,7 +47,7 @@ jobs:
           python3 scripts/release_notes.py --version "$VERSION" > dist/release-notes.md
           gh release create "ForeverUtilities-v$VERSION" "$ARCHIVE" \
             --target "$GITHUB_SHA" \
-            --title "ForeverUtilities v$VERSION" \
+            --title "Forever - Hunter's Friend v$VERSION" \
             --notes-file dist/release-notes.md
   curseforge:
     needs: release

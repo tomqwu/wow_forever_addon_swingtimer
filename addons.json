@@ -4,7 +4,6 @@
     "tests": [
       "tests/test_range.lua",
       "tests/test_ui.lua",
-      "tests/test_modules.lua",
       "tests/test_targetcontext.lua"
     ],
     "releaseTagPrefix": "ForeverUtilities-v"

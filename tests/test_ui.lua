@@ -1,7 +1,6 @@
 local NS={}
 local root='addons/ForeverUtilities/'
 assert(loadfile(root..'Core.lua'))('ForeverUtilities',NS)
-assert(loadfile(root..'Modules.lua'))('ForeverUtilities',NS)
 assert(loadfile('addons/ForeverUtilities/TargetContext.lua'))('ForeverUtilities',NS)
 local count=0
 local function check(ok,msg) assert(ok,msg);count=count+1 end
@@ -35,45 +34,37 @@ ForeverUtilitiesDB={x=70,y=-123,scale=1.3,locked=false,enabled=false}
 ForeverSwingDB={x=123,cue=0.7}
 local refreshes=0
 NS.Range={Create=function(host,db)
- check(db==ForeverUtilitiesDB.modules.distance,'module owns settings')
+ check(db==ForeverUtilitiesDB.hunter,'hunter owns migrated settings')
  return {Refresh=function() refreshes=refreshes+1 end,Status=function() return 'test' end}
 end}
+local class='HUNTER'
+UnitClass=function() return 'Hunter',class end
 assert(loadfile(root..'Distance.lua'))('ForeverUtilities',NS)
 assert(loadfile(root..'UI.lua'))('ForeverUtilities',NS)
 local events=frames[1]
 events.scripts.OnEvent(events,'ADDON_LOADED','Unrelated')
-check(not NS.Modules.db,'ignores unrelated addon')
+check(not NS.Hunter.db,'ignores unrelated addon')
 events.scripts.OnEvent(events,'ADDON_LOADED','ForeverUtilities')
-check(not events.events.ADDON_LOADED,'initializes once')
-local db=ForeverUtilitiesDB.modules.distance
-check(db.x==70 and db.y==-123 and db.scale==1.3 and not db.locked and not db.enabled,'legacy preferences preserved')
-check(not named.ForeverUtilitiesDistanceFrame,'disabled module not created at login')
+local db=NS.Hunter.db
+check(db.x==70 and db.y==-123 and db.scale==1.3 and not db.enabled,'flat preferences migrated')
+check(not NS.Hunter.instance,'disabled bar not created')
 local slash=SlashCmdList.FOREVERUTILITIES
-slash('')
-local panel=named.ForeverUtilitiesToolbox
-check(panel and panel.shown,'slash opens shared toolbox')
-local section=panel.sections.distance
-check(section and not section.enabled.checked,'panel reflects disabled setting')
-section.enabled:SetChecked(true);section.enabled.scripts.OnClick(section.enabled)
-local host=named.ForeverUtilitiesDistanceFrame
-check(db.enabled and host.shown and host.scale==1.3,'panel enables distance utility with preserved scale')
-section.controls.locked:SetChecked(true);section.controls.locked.scripts.OnClick(section.controls.locked)
-check(db.locked and not host.mouse,'panel lock controls module')
-for _,f in ipairs(frames) do
- if rawget(f,'text')=='+' then f.scripts.OnClick(f) end
-end
-check(math.abs(db.scale-1.4)<0.001,'panel size control')
-section.enabled:SetChecked(false);section.enabled.scripts.OnClick(section.enabled)
-check(not db.enabled and not host.shown,'panel disable hides module host')
-slash('unlock');check(db.enabled and not db.locked and host.mouse,'legacy unlock shortcut retained')
-slash('scale 1.6');check(host.scale==1.6,'legacy scale shortcut retained')
-slash('scale 99');check(host.scale==1.6,'invalid scale rejected')
-slash('off');check(not host.shown,'legacy off shortcut retained')
-slash('reset');check(db.scale==1 and db.x==0 and db.enabled and db.locked,'reset applies only distance defaults')
-check(ForeverSwingDB.x==123 and ForeverSwingDB.cue==0.7,'unrelated settings untouched')
-for _,f in ipairs(frames) do if rawget(f,'text')=='Close' then f.scripts.OnClick(f) end end
-check(not panel.shown,'panel closes')
-slash('options');check(panel.shown,'panel reopens')
-check(UISpecialFrames[1]=='ForeverUtilitiesToolbox','escape closes registered panel')
-check(refreshes>1,'module changes refresh display')
-print('PASS: '..count..' toolbox UI checks')
+slash('');local panel=named.ForeverHunterFriendOptions
+check(panel and panel.shown and rawget(panel,'rows')==nil,'single hunter settings panel')
+panel.enabled:SetChecked(true);panel.enabled.scripts.OnClick(panel.enabled)
+check(db.enabled and NS.Hunter.instance,'settings enable bar')
+slash('scale 1.5');check(db.scale==1.5,'scale command')
+slash('scale 9');check(db.scale==1.5,'invalid scale rejected')
+slash('off');check(not db.enabled and not named.ForeverUtilitiesDistanceFrame.shown,'disable hides bar')
+slash('unlock');check(db.enabled and not db.locked,'unlock enables dragging')
+slash('lock');check(db.locked,'lock command')
+slash('reset');check(db.scale==1 and db.locked,'reset defaults')
+local saved={modules={distance={enabled=false,x=81,scale=1.2,showAngle=false}},schemaVersion=1}
+NS.Hunter.instance=nil;NS.Hunter.Initialize(saved)
+check(NS.Hunter.db.x==81 and NS.Hunter.db.scale==1.2 and not NS.Hunter.db.showAngle,'toolbox preferences migrated')
+NS.Hunter.db.x=91;NS.Hunter.Initialize(saved)
+check(NS.Hunter.db.x==91,'migration is one time')
+class='MAGE';NS.Hunter.instance=nil;NS.Hunter.Initialize({})
+check(not NS.Hunter.instance,'non hunters never create bar')
+slash('on');check(not NS.Hunter.instance,'non hunter commands cannot create bar')
+print('PASS: '..count..' hunter UI and migration checks')

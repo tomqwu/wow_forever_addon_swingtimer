@@ -1,94 +1,59 @@
-# Forever Utilities
+# Forever - Hunter's Friend
 
-**Your utilities, your choice. Keep the tools you need and switch off the rest.**
+**Your range, ammunition, and target awareness in one compact hunter bar.**
 
-Forever Utilities is a modular toolbox for **World of Warcraft: Forever**.
-Open `/futils` to choose which utilities are enabled and adjust each one's settings.
-**Distance Checker** is the first included utility; future tools will have their
-own controls rather than being added to the distance indicator.
+Built for hunters in **World of Warcraft: Forever**, Hunter's Friend shows what
+you need at a glance without a toolbox or module selector.
 
-## Choose your utilities
+- **Range at a glance:** a colored weapon icon and readable range text.
+- **Ammo below the range text:** a small count of your selected ammunition carried in bags, excluding banks. Inventory changes update it even without a target. An empty hunter ammo slot shows a red zero.
+- **Target-of-target portrait:** a small portrait on the right shows who your target is targeting, without extra wording.
+- **Optional facing angle:** signed degrees relative to your character: positive left, negative right, zero ahead. Hidden when valid position data is unavailable.
+- **Compact and movable:** the bar stays 400 × 56, with adjustable scale and position.
+- **Quiet while idle:** no target dims the bar to 20%; disabled means no bar updates or event listeners.
 
-- **One toolbox panel:** open `/futils` (or `/futils options`).
-- **Independent toggles:** enable only the features you want.
-- **Per-utility settings:** changes and resets stay scoped to the selected utility.
-- **No disabled-module work:** disabled utilities stop their event listeners and update loops.
-- **Settings preserved:** existing distance position, scale, and enabled state migrate automatically.
-
-Select **Distance checker** in the panel to enable it, lock or unlock its position,
-change its size, or reset its settings. Uncheck “Lock indicator position” to drag
-it on your screen. The Close button or Escape dismisses the toolbox.
-
-## Distance Checker
-
-Select an enemy to see a live yard reading when available, or an approximate
-range bracket and color-coded icon. Clear your target and the panel dims to 20%
-opacity. Friendly targets without a usable reading say “Friendly target — Distance
-unavailable.” Numeric readings depend on what the client makes available.
-
-A portrait on the **right** shows your target’s current target, opposite the weapon
-icon on the left. It disappears when no target-of-target portrait is available.
-There is no target-of-target wording. The optional angle reading shows signed
-degrees only: positive means left, negative means right, and zero means ahead.
-It follows character facing, not the camera, and hides when position/facing data
-is unavailable. Both features can be toggled in `/futils`. The bar stays 400 × 56.
-Angle is a direction measurement, not proof that an attack can hit.
-
-A small **Ammo: 123** reading beside the portrait counts your selected ammo type
-in carried inventory, excluding bank storage. It refreshes on inventory changes
-even without a target. Hunters with an empty ammo slot see a red **Ammo: 0**;
-unavailable readings and empty slots for other classes are hidden.
-
-## Built for quick reads
-
-- **Readable during combat:** large outlined text, a dark background, and a bright colored icon border.
-- **Quiet with no target:** 20% opacity while idle, full visibility when targeting or repositioning.
-- **Your layout:** drag it anywhere, resize it, or turn it off with simple commands.
-- **Useful across classes:** distance brackets follow your learned spells, with Auto Shot checks for hunters.
-- **Standalone:** no required addons, no swing bar, and no automated combat actions.
-
-## Understand the colors
+## Range colors
 
 | Color | Meaning |
 | --- | --- |
 | Green | In ranged auto-attack range |
 | Amber | In melee range |
 | Orange | Confirmed too close for ranged auto attack |
-| Red | Beyond ranged attack range or beyond the checked spell range |
-| Blue | A distance bracket is available, but attack-range status is not |
-| Gray | No target, invalid target, or range data unavailable |
+| Red | Beyond ranged attack range or checked spell range |
+| Blue | Estimated distance available, attack-range status unavailable |
+| Gray | No target or unavailable range data |
 
-Readings such as `<=5 yd`, `~8–35 yd`, and `>100 yd` are **approximate spell-based
-brackets**, not exact measurements. A decimal reading such as `23.4 yd` is shown
-only when the client supplies a validated numeric distance. It refreshes every
-0.15 seconds and may be unavailable for enemies or in restricted content. Numeric
-position distance can differ from spell reach, so colors still follow attack checks. Precision depends on learned abilities,
-target combat reach, and client restrictions. Being in range does not guarantee
-line of sight, facing, ammunition, or ability readiness.
+Readings such as `~8–35 yd` are approximate spell-based brackets. Decimal yards
+appear only when the client supplies validated numeric distance. Restricted
+readings are never guessed. Range and facing do not guarantee line of sight or
+that an attack can fire. No combat actions are automated.
 
-## Get started
+## Setup
 
-Install the `ForeverUtilities` folder into `_classic_beta_/Interface/AddOns/`,
-restart WoW for first discovery, and enable **Forever Utilities**. Open `/futils`
-to choose your utilities, then select a target to try Distance Checker. For later updates, use `/reload`.
+Install the `ForeverUtilities` folder into `_classic_beta_/Interface/AddOns/`.
+The folder name is retained for seamless upgrades; the addon appears in WoW as
+**Forever - Hunter's Friend**. Restart for first installation, or use `/reload`
+for updates. The bar runs only on hunter characters.
+
+Open `/fhunter` for a single settings panel: enable the bar, lock its position,
+change scale, or toggle the portrait and angle. `/futils` remains an alias.
 
 | Command | Action |
 | --- | --- |
-| `/futils` | Open the shared utilities panel |
-| `/futils unlock` | Drag the indicator; stays fully visible while unlocked |
-| `/futils lock` | Lock its position |
-| `/futils scale 1.2` | Make it larger (supported range: 0.5–2) |
-| `/futils on` / `/futils off` | Show or disable the indicator |
-| `/futils reset` | Restore Distance Checker defaults only |
-| `/futils status` | Show version and range diagnostics |
+| `/fhunter` | Open settings |
+| `/fhunter unlock` / `lock` | Move or lock the bar |
+| `/fhunter scale 1.2` | Adjust size (0.5–2) |
+| `/fhunter on` / `off` | Enable or disable |
+| `/fhunter reset` | Restore defaults |
+| `/fhunter status` | Version and range diagnostics |
 
-**Upgrading from the old project?** Disable or remove ForeverSwing and the
-ForeverHunterRange prototype to avoid duplicate UI. This project is now Forever
-Utilities; the swing bar is no longer included. Older saved settings are untouched.
+Existing Forever Utilities position, scale, and display settings migrate
+automatically. This is a dedicated hunter addon; the modular toolbox and swing
+bar are no longer included. No other addons are required.
 
-Designed for the **Forever 1.60.1 beta client**. Automated tests cover range logic,
-UI behavior, and publishing; live gameplay validation remains ongoing. Report
-issues with your client build and `/futils status` output.
+Designed for the Forever 1.60.1 beta client. API availability may limit numeric
+distance, angles, and ammo readings. Automated checks use mocked APIs; live
+in-game validation remains ongoing.
 
 [Source code](https://github.com/tomqwu/wow_forever_utilities) ·
 [Report an issue](https://github.com/tomqwu/wow_forever_utilities/issues)

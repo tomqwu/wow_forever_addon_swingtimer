@@ -1,10 +1,6 @@
-# Forever Utilities workflow
+# Forever - Hunter's Friend workflow
 
-The user changed the project to Forever Utilities: distance checking first,
-with the swing bar removed for now. Active code is addons/ForeverUtilities/.
-Do not restore the swing bar or duplicate the former hunter addon. Historical
-swing releases remain in Git history. This is one utilities addon with separate
-modules, not a bundle that installs the retired addons.
+Dedicated hunter addon, not a modular toolbox. Active code stays in addons/ForeverUtilities/ for upgrade compatibility. Do not restore module selection or the swing bar.
 
 Use verified Forever 1.60.x APIs. Respect secret values and missing APIs; never
 present fabricated exact yards. Spell checks supply approximate brackets. A
@@ -13,8 +9,7 @@ spell IDs and scan learned spells. Poll only while enabled with a living
 target, stopping on target loss, death, disable, and leaving the world.
 
 Runtime modules use the addon's namespace, independent frame names,
-ForeverUtilitiesDB, and /futils commands. Keep future module settings and update
-lifecycles separate. No dependency on ForeverSwing or ForeverHunterRange.
+ForeverUtilitiesDB, and /futils commands. Preserve hunter settings and the disabled lifecycle. No dependency on ForeverSwing or ForeverHunterRange.
 
 ## Delivery
 
@@ -36,7 +31,7 @@ for first addon discovery, or /reload for updates to an existing installation.
 
 The user explicitly requested reusing CurseForge project 1700438 for Forever
 Utilities on 2026-09-18, superseding the earlier separate-project restriction.
-Keep GitHub and CurseForge descriptions aligned with the utilities scope. The
+Keep GitHub and CurseForge descriptions aligned with the hunter scope. The
 restored uploader accepts only ForeverUtilities-vX.Y.Z tags and standalone
 ForeverUtilities ZIPs. Use CURSE_FORGE and CURSEFORGE_PROJECT_ID without reading
 or exposing token values. Verify both release jobs and the upload receipt.
@@ -59,13 +54,11 @@ and true and the squared value is finite/nonnegative. Never fabricate a midpoint
 or use coordinates to bypass restrictions. Friendly targets may provide numeric
 distance; enemy numeric readings are not guaranteed. Clear stale values promptly.
 
-## Toolbox modules
+## Dedicated hunter runtime
 
-/futils opens the shared selector/settings panel. Modules.lua registers features,
-owns lazy creation and per-module settings, and migrates the old flat distance
-settings once to ForeverUtilitiesDB.modules.distance. Distance.lua owns the
-Distance Checker host and options; Range.lua owns its readings/events. Keep each
-future utility isolated under modules.<id>. Register before UI.lua initializes.
-Disabling must hide the feature, clear its OnUpdate, and unregister events; do not
-construct disabled modules on login. Preserve legacy distance shortcut commands.
-Check module isolation, panel interactions, and migration when changing this code.
+Distance.lua owns NS.Hunter, lazy bar creation, class gating, and settings.
+UI.lua exposes one settings panel through /fhunter, with /futils as an alias.
+ForeverUtilitiesDB.hunter is migrated once from modules.distance or legacy flat
+settings. Keep the installation folder, saved-variable name, and release prefix
+for compatibility. No runtime Modules registry remains. Non-hunters must not
+create the bar. Ammo sits below the white range text; keep the 400 × 56 layout.

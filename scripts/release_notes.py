@@ -13,7 +13,7 @@ def render(version, overview, changelog):
         raise ValueError(f'Add release highlights for {version} to docs/changelog.md')
     if not overview.strip():
         raise ValueError('Project description must not be empty')
-    return f'# Forever Utilities v{version}\n\n## What changed\n\n{match[1].strip()}\n\n---\n\n{overview.strip()}\n'
+    return f"# Forever - Hunter's Friend v{version}\n\n## What changed\n\n{match[1].strip()}\n\n---\n\n{overview.strip()}\n"
 
 
 def main():

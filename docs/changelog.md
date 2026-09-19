@@ -1,3 +1,14 @@
+## 0.7.0
+
+- Rebranded as Forever - Hunter's Friend, focused exclusively on hunters.
+- Removed the runtime module registry and toolbox selector; /fhunter opens one settings panel.
+- Moved ammunition directly below the main white range text, with optional angle alongside it.
+- Migrates existing flat or toolbox distance settings once into dedicated hunter settings.
+- Non-hunter characters do not create the bar. /futils remains a compatibility alias.
+- Kept the existing addon folder and saved-variable name for seamless upgrades.
+
+Use `/reload`, then `/fhunter` for settings.
+
 ## 0.6.0
 
 - Added a small ammo count near the right side of the compact bar, beside the portrait.

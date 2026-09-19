@@ -7,9 +7,9 @@ local function Normalize(db)
     db.y=math.max(-5000,math.min(5000,db.y))
     db.scale=math.max(0.5,math.min(2,db.scale))
 end
-NS.Modules.Register({
-    id='distance', name='Distance checker',
-    description='Distance, target of target, and facing angle when available. Dims with no target.',
+NS.Hunter = {
+    name="Forever - Hunter's Friend",
+    description='Hunter range, ammunition, and target awareness.',
     defaults={enabled=true,locked=true,x=0,y=-210,scale=1,showTargetTarget=true,showAngle=true}, normalize=Normalize,
     options={
         {key='locked',label='Lock indicator position',kind='toggle'},
@@ -30,7 +30,7 @@ NS.Modules.Register({
             host:SetScale(db.scale);host:ClearAllPoints()
             host:SetPoint('CENTER',UIParent,'CENTER',db.x,db.y)
             host:EnableMouse(db.enabled and not db.locked)
-            host.hint:SetText(db.locked and '' or 'Drag to move | /futils lock')
+            host.hint:SetText(db.locked and '' or 'Drag to move | /fhunter lock')
             indicator.Refresh()
         end
         host:SetScript('OnDragStart',function(self) if db.enabled and not db.locked then self:StartMoving() end end)
@@ -43,4 +43,41 @@ NS.Modules.Register({
         end)
         return {Apply=Apply,Status=indicator.Status}
     end,
-})
+}
+
+local Hunter=NS.Hunter
+function Hunter.Initialize(saved)
+    local old=type(saved.modules)=='table' and saved.modules.distance or saved
+    if type(saved.hunter)~='table' then
+        saved.hunter={}
+        if type(old)=='table' then
+            for key in pairs(Hunter.defaults) do saved.hunter[key]=old[key] end
+        end
+    end
+    Hunter.db=saved.hunter
+    for key,value in pairs(Hunter.defaults) do
+        if type(Hunter.db[key])~=type(value) then Hunter.db[key]=value end
+    end
+    saved.schemaVersion=2
+    Hunter.Apply()
+end
+function Hunter.IsHunter()
+    if type(UnitClass)~='function' then return false end
+    local ok,_,class=pcall(UnitClass,'player')
+    return ok and NS.Core.IsReadable(class) and class=='HUNTER'
+end
+function Hunter.Apply()
+    Normalize(Hunter.db)
+    if Hunter.IsHunter() and Hunter.db.enabled and not Hunter.instance then
+        Hunter.instance=Hunter.create(Hunter.db)
+    end
+    if Hunter.instance then Hunter.instance.Apply() end
+    if Hunter.changed then Hunter.changed() end
+end
+function Hunter.SetEnabled(enabled)
+    Hunter.db.enabled=enabled;Hunter.Apply()
+end
+function Hunter.Reset()
+    for key,value in pairs(Hunter.defaults) do Hunter.db[key]=value end
+    Hunter.Apply()
+end

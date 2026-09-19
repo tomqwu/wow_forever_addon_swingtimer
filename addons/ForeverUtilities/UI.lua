@@ -1,8 +1,8 @@
 local addon, NS = ...
-local Modules=NS.Modules
+local Hunter=NS.Hunter
 local events=CreateFrame('Frame')
-local panel, selected
-local function Say(text) DEFAULT_CHAT_FRAME:AddMessage('|cff66ff88ForeverUtilities:|r '..text) end
+local panel
+local function Say(text) DEFAULT_CHAT_FRAME:AddMessage("|cff66ff88Hunter's Friend:|r "..text) end
 local function Text(parent,text,x,y,font)
     local label=parent:CreateFontString(nil,'OVERLAY',font or 'GameFontHighlight')
     label:SetPoint('TOPLEFT',parent,'TOPLEFT',x,y);label:SetText(text)
@@ -23,116 +23,75 @@ local function Check(parent,label,x,y,callback)
 end
 local function RefreshPanel()
     if not panel then return end
-    for _,definition in ipairs(Modules.list) do
-        local enabled=Modules.Settings(definition.id).enabled
-        panel.rows[definition.id]:SetText((selected==definition.id and '> ' or '')..definition.name..(enabled and ' [On]' or ' [Off]'))
-        local section=panel.sections[definition.id]
-        if section then
-            section:SetShown(selected==definition.id)
-            section.enabled:SetChecked(enabled)
-            section.state:SetText(enabled and 'Enabled' or 'Disabled — no background updates')
-            for _,option in ipairs(definition.options or {}) do
-                local control=section.controls[option.key]
-                local value=Modules.Settings(definition.id)[option.key]
-                if option.kind=='toggle' then control:SetChecked(value)
-                else control:SetText(string.format('%.1fx',value)) end
-            end
-        end
+    panel.enabled:SetChecked(Hunter.db.enabled)
+    for _,option in ipairs(Hunter.options) do
+        local value=Hunter.db[option.key]
+        if option.kind=='toggle' then panel.controls[option.key]:SetChecked(value)
+        else panel.controls[option.key]:SetText(string.format('%.1fx',value)) end
     end
-end
-local function Select(id)
-    selected=id;Modules.db.selectedModule=id
-    if not panel.sections[id] then
-        local definition=Modules.definitions[id]
-        local section=CreateFrame('Frame',nil,panel)
-        section:SetPoint('TOPLEFT',panel,'TOPLEFT',235,-62);section:SetSize(340,410)
-        section.controls={};panel.sections[id]=section
-        Text(section,definition.name,0,0,'GameFontNormalLarge')
-        local description=Text(section,definition.description,0,-32)
-        description:SetWidth(320);description:SetJustifyH('LEFT')
-        section.enabled=Check(section,'Enable this utility',0,-94,function(value) Modules.SetEnabled(id,value) end)
-        section.state=Text(section,'',0,-128,'GameFontHighlightSmall')
-        local y=-158
-        for _,option in ipairs(definition.options or {}) do
-            local key=option.key
-            if option.kind=='toggle' then
-                section.controls[key]=Check(section,option.label,0,y,function(value)
-                    Modules.Settings(id)[key]=value;Modules.Apply(id)
-                end)
-            elseif option.kind=='number' then
-                Text(section,option.label,0,y-6)
-                section.controls[key]=Text(section,'',210,y-6)
-                local function Adjust(delta)
-                    local settings=Modules.Settings(id)
-                    settings[key]=math.max(option.min,math.min(option.max,settings[key]+delta))
-                    Modules.Apply(id)
-                end
-                Button(section,'-',170,y,28,function() Adjust(-option.step) end)
-                Button(section,'+',275,y,28,function() Adjust(option.step) end)
-            end
-            y=y-42
-        end
-        Button(section,'Reset this utility',0,y,170,function() Modules.Reset(id) end)
-    end
-    RefreshPanel()
 end
 local function OpenPanel()
     if not panel then
-        panel=CreateFrame('Frame','ForeverUtilitiesToolbox',UIParent)
-        panel:SetSize(600,500);panel:SetPoint('CENTER');panel:SetFrameStrata('DIALOG')
+        panel=CreateFrame('Frame','ForeverHunterFriendOptions',UIParent)
+        panel:SetSize(420,360);panel:SetPoint('CENTER');panel:SetFrameStrata('DIALOG')
         panel:SetClampedToScreen(true);panel:EnableMouse(true)
         local bg=panel:CreateTexture(nil,'BACKGROUND');bg:SetAllPoints();bg:SetColorTexture(0.025,0.03,0.045,0.98)
-        Text(panel,'Forever Utilities',20,-18,'GameFontNormalLarge')
-        Text(panel,'Choose the utilities you want to use.',20,-43,'GameFontHighlightSmall')
-        Button(panel,'Close',510,-14,70,function() panel:Hide() end)
-        panel.rows={};panel.sections={}
-        local scroll=CreateFrame('ScrollFrame',nil,panel)
-        scroll:SetPoint('TOPLEFT',panel,'TOPLEFT',15,-70);scroll:SetSize(205,370)
-        local list=CreateFrame('Frame',nil,scroll);list:SetSize(205,math.max(370,#Modules.list*36))
-        scroll:SetScrollChild(list);scroll:EnableMouseWheel(true)
-        local offset=0
-        scroll:SetScript('OnMouseWheel',function(self,delta)
-            offset=math.max(0,math.min(math.max(0,#Modules.list*36-370),offset-delta*36))
-            self:SetVerticalScroll(offset)
-        end)
-        for i,definition in ipairs(Modules.list) do
-            local id=definition.id
-            panel.rows[id]=Button(list,definition.name,0,-(i-1)*36,200,function() Select(id) end)
+        Text(panel,"Forever - Hunter's Friend",20,-18,'GameFontNormalLarge')
+        Text(panel,'Range, ammunition, and target awareness.',20,-48,'GameFontHighlightSmall')
+        panel.enabled=Check(panel,'Enable hunter bar',20,-78,function(value) Hunter.SetEnabled(value) end)
+        panel.controls={}
+        local y=-120
+        for _,option in ipairs(Hunter.options) do
+            local key=option.key
+            if option.kind=='toggle' then
+                panel.controls[key]=Check(panel,option.label,20,y,function(value)
+                    Hunter.db[key]=value;Hunter.Apply()
+                end)
+            else
+                Text(panel,option.label,20,y-6)
+                panel.controls[key]=Text(panel,'',230,y-6)
+                local function Adjust(delta)
+                    Hunter.db[key]=math.max(option.min,math.min(option.max,Hunter.db[key]+delta))
+                    Hunter.Apply()
+                end
+                Button(panel,'-',190,y,28,function() Adjust(-option.step) end)
+                Button(panel,'+',295,y,28,function() Adjust(option.step) end)
+            end
+            y=y-42
         end
-        Text(panel,'v0.6.0  |  Settings are saved per utility.',20,-472,'GameFontHighlightSmall')
-        if UISpecialFrames then table.insert(UISpecialFrames,'ForeverUtilitiesToolbox') end
+        Button(panel,'Reset settings',20,-304,150,function() Hunter.Reset() end)
+        Button(panel,'Close',320,-304,80,function() panel:Hide() end)
+        if UISpecialFrames then table.insert(UISpecialFrames,'ForeverHunterFriendOptions') end
     end
-    panel:Show();Select(Modules.db.selectedModule)
+    panel:Show();RefreshPanel()
 end
-Modules.changed=RefreshPanel
+Hunter.changed=RefreshPanel
 events:RegisterEvent('ADDON_LOADED')
 events:SetScript('OnEvent',function(self,_,name)
     if name~=addon then return end
     if type(ForeverUtilitiesDB)~='table' then ForeverUtilitiesDB={} end
-    Modules.Initialize(ForeverUtilitiesDB)
+    Hunter.Initialize(ForeverUtilitiesDB)
     self:UnregisterEvent('ADDON_LOADED')
-    Say('Loaded. /futils opens your utilities toolbox.')
+    if Hunter.IsHunter() then Say('Loaded. /fhunter opens settings.') end
 end)
-SLASH_FOREVERUTILITIES1='/futils'
+SLASH_FOREVERUTILITIES1='/fhunter'
+SLASH_FOREVERUTILITIES2='/futils'
 SlashCmdList.FOREVERUTILITIES=function(message)
-    if not Modules.db then return end
+    if not Hunter.db then return end
+    if not Hunter.IsHunter() then Say('This addon is for hunters.');return end
     local command,arg=message:lower():match('^%s*(%S*)%s*(.-)%s*$')
-    local db=Modules.Settings('distance')
+    local db=Hunter.db
     if command=='' or command=='options' or command=='tools' then OpenPanel()
-    elseif command=='unlock' then db.locked=false;Modules.SetEnabled('distance',true)
-    elseif command=='lock' then db.locked=true;Modules.Apply('distance')
-    elseif command=='on' or command=='off' then Modules.SetEnabled('distance',command=='on')
+    elseif command=='unlock' then db.locked=false;Hunter.SetEnabled(true)
+    elseif command=='lock' then db.locked=true;Hunter.Apply()
+    elseif command=='on' or command=='off' then Hunter.SetEnabled(command=='on')
     elseif command=='scale' then
         local value=tonumber(arg)
         if not NS.Core.IsNumber(value) or value<0.5 or value>2 then Say('Scale must be 0.5 to 2.');return end
-        db.scale=value;Modules.Apply('distance')
-    elseif command=='reset' then Modules.Reset('distance')
+        db.scale=value;Hunter.Apply()
+    elseif command=='reset' then Hunter.Reset()
     elseif command=='status' then
-        Say('v0.6.0 | Utilities: '..#Modules.list)
-        for _,definition in ipairs(Modules.list) do
-            Say(definition.name..': '..(Modules.Settings(definition.id).enabled and 'enabled' or 'disabled'))
-            local instance=Modules.instances[definition.id]
-            if Modules.Settings(definition.id).enabled and instance and instance.Status then Say(instance.Status()) end
-        end
-    else Say('/futils opens the toolbox. Distance shortcuts: unlock | lock | on | off | scale 0.5..2 | reset | status') end
+        Say('v0.7.0 | '..(db.enabled and 'Enabled' or 'Disabled'))
+        if db.enabled and Hunter.instance then Say(Hunter.instance.Status()) end
+    else Say('/fhunter: unlock | lock | on | off | scale 0.5..2 | reset | status') end
 end
