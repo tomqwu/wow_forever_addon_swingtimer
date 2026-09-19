@@ -107,11 +107,23 @@ function Range.Create(host, db)
     local ammoLabel=frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall')
     ammoLabel:SetFont(STANDARD_TEXT_FONT or 'Fonts\\FRIZQT__.TTF',12,'OUTLINE')
     ammoLabel:SetJustifyH('LEFT');ammoLabel:SetWordWrap(false);ammoLabel:SetSize(110,14)
+    local warnedLowAmmo=false
     local function UpdateAmmo()
         local count=NS.TargetContext.AmmoCount()
         ammoLabel:SetText(count and ('Ammo: '..count) or '')
-        if count==0 then ammoLabel:SetTextColor(1,0.25,0.2)
+        local low=count~=nil and count<=200
+        if low then ammoLabel:SetTextColor(1,0.25,0.2)
         else ammoLabel:SetTextColor(0.9,0.93,1) end
+        if count and count>200 then warnedLowAmmo=false end
+        if low and not warnedLowAmmo then
+            warnedLowAmmo=true
+            local message="Hunter's Friend: Low ammo — "..count.." remaining!"
+            if UIErrorsFrame and type(UIErrorsFrame.AddMessage)=='function' then
+                pcall(UIErrorsFrame.AddMessage,UIErrorsFrame,message,1,0.25,0.2,1)
+            elseif DEFAULT_CHAT_FRAME and type(DEFAULT_CHAT_FRAME.AddMessage)=='function' then
+                pcall(DEFAULT_CHAT_FRAME.AddMessage,DEFAULT_CHAT_FRAME,message)
+            end
+        end
     end
     local function ContextLayout()
         frame:SetHeight(NS.TargetContext.Height(db))

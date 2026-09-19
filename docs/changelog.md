@@ -1,3 +1,12 @@
+## 0.8.0
+
+- Ammo turns red at 200 or fewer arrows/bullets.
+- Shows a one-time low-ammo warning at the threshold, including if enabled with ammo already low.
+- Does not repeat after each shot or target change; restocking above 200 rearms it.
+- Unavailable readings do not reset the warning or create a false alert.
+
+Use `/reload` to apply the update.
+
 ## 0.7.1
 
 - Raised the ammo and angle line by 6 pixels, bringing it closer to the range text and away from the bottom edge.

@@ -196,6 +196,8 @@ check(not f.events.UNIT_TARGET and not f.events.UNIT_PORTRAIT_UPDATE and not f.s
 db.enabled=true;UnitExists=function() return false end
 GetInventorySlotInfo=function() return 0 end
 GetInventoryItemID=function() return 123 end
+local warnings={}
+UIErrorsFrame={AddMessage=function(_,message) table.insert(warnings,message) end}
 local ammo=500
 C_Item={GetItemCount=function() return ammo end}
 f.Refresh()
@@ -204,6 +206,17 @@ ammo=499;f.scripts.OnEvent(f,'BAG_UPDATE_DELAYED')
 check(f.labels[3].text=='Ammo: 499','bag event refreshes ammo')
 ammo=200;f.scripts.OnEvent(f,'UNIT_INVENTORY_CHANGED','player')
 check(f.labels[3].text=='Ammo: 200','equipped ammo change refreshes count')
+check(#warnings==1 and warnings[1]:find('200 remaining',1,true),'warning at exactly 200')
+ammo=199;f.scripts.OnEvent(f,'BAG_UPDATE_DELAYED');f.Refresh()
+check(#warnings==1,'no repeated warning per shot or refresh')
+ammo=nil;f.scripts.OnEvent(f,'BAG_UPDATE_DELAYED')
+ammo=198;f.scripts.OnEvent(f,'BAG_UPDATE_DELAYED')
+check(#warnings==1,'unavailable readings do not rearm warning')
+ammo=201;f.scripts.OnEvent(f,'BAG_UPDATE_DELAYED')
+ammo=190;f.scripts.OnEvent(f,'BAG_UPDATE_DELAYED')
+check(#warnings==2,'restock above threshold rearms warning')
+ammo=0;f.scripts.OnEvent(f,'BAG_UPDATE_DELAYED')
+check(#warnings==2,'zero does not spam existing low warning')
 C_Item.GetItemCount=function() return nil end;f.scripts.OnEvent(f,'BAG_UPDATE_DELAYED')
 check(f.labels[3].text=='','unavailable count clears stale value')
 db.enabled=false;f.Refresh()

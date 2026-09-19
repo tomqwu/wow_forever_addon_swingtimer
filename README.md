@@ -6,7 +6,7 @@ Built for hunters in **World of Warcraft: Forever**, Hunter's Friend shows what
 you need at a glance without a toolbox or module selector.
 
 - **Range at a glance:** a colored weapon icon and readable range text.
-- **Ammo below the range text:** a small count of your selected ammunition carried in bags, excluding banks. Inventory changes update it even without a target. An empty hunter ammo slot shows a red zero.
+- **Ammo below the range text:** a small count of your selected ammunition carried in bags, excluding banks. Inventory changes update it even without a target. At 200 or fewer, the count turns red and a one-time low-ammo warning appears. Restocking above 200 rearms the warning. An empty hunter ammo slot shows zero.
 - **Target-of-target portrait:** a small portrait on the right shows who your target is targeting, without extra wording.
 - **Optional facing angle:** signed degrees relative to your character: positive left, negative right, zero ahead. Hidden when valid position data is unavailable.
 - **Compact and movable:** the bar stays 400 × 56, with adjustable scale and position.
