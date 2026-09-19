@@ -1,3 +1,10 @@
+## 0.7.1
+
+- Raised the ammo and angle line by 6 pixels, bringing it closer to the range text and away from the bottom edge.
+- Keeps the original bar size and saved position.
+
+Use `/reload` to apply the spacing adjustment.
+
 ## 0.7.0
 
 - Rebranded as Forever - Hunter's Friend, focused exclusively on hunters.

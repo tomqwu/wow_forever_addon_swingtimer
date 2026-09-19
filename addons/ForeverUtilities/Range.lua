@@ -103,7 +103,7 @@ function Range.Create(host, db)
     angleLabel:SetFont(STANDARD_TEXT_FONT or 'Fonts\\FRIZQT__.TTF',12,'OUTLINE')
     angleLabel:SetJustifyH('LEFT');angleLabel:SetWordWrap(false)
     angleLabel:SetTextColor(0.9,0.93,1)
-    angleLabel:SetPoint('TOPLEFT',frame,'TOPLEFT',190,-39)
+    angleLabel:SetPoint('TOPLEFT',frame,'TOPLEFT',190,-33)
     local ammoLabel=frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall')
     ammoLabel:SetFont(STANDARD_TEXT_FONT or 'Fonts\\FRIZQT__.TTF',12,'OUTLINE')
     ammoLabel:SetJustifyH('LEFT');ammoLabel:SetWordWrap(false);ammoLabel:SetSize(110,14)
@@ -118,7 +118,7 @@ function Range.Create(host, db)
         angleLabel:SetShown(db.showAngle~=false)
         local width=db.showTargetTarget~=false and 270 or 322
         label:SetWidth(width);angleLabel:SetWidth(width-124)
-        ammoLabel:ClearAllPoints();ammoLabel:SetPoint('TOPLEFT',frame,'TOPLEFT',66,-39)
+        ammoLabel:ClearAllPoints();ammoLabel:SetPoint('TOPLEFT',frame,'TOPLEFT',66,-33)
         label:SetHeight(32)
         if db.showTargetTarget==false then portrait:Hide() end
     end
