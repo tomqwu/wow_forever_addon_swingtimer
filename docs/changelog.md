@@ -1,3 +1,11 @@
+## 0.13.1
+
+- Replaced the square minimap spell button with a small round, gold-rimmed icon.
+- Positions the button on the minimap’s outer edge using its actual size, instead of covering the map with fixed offsets.
+- Keeps the existing click-to-open settings and visibility switch.
+
+Use `/reload` to apply the minimap styling fix.
+
 ## 0.13.0
 
 - Organized the unchanged 400 × 56 bar into range/ammo, combat reminders, pet, and lock blocks with subtle dividers.

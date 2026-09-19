@@ -13,6 +13,10 @@ function methods:RegisterEvent(e) self.events[e]=true end
 function methods:UnregisterEvent(e) self.events[e]=nil end
 function methods:CreateFontString() return object() end
 function methods:CreateTexture() return object() end
+function methods:CreateMaskTexture() return object() end
+function methods:SetSize(w,h) self.width,self.height=w,h end
+function methods:GetWidth() return self.width end
+function methods:GetHeight() return self.height end
 function methods:SetText(v) self.text=v end
 function methods:SetMovable(v) self.movable=v end
 function methods:StartMoving() self.moving=true end
@@ -32,7 +36,7 @@ CreateFrame=function(_,name,parent)
  local f=object();f.name=name;f.parent=parent;frames[#frames+1]=f
  if name then named[name]=f end;return f
 end
-UIParent=object();Minimap=object();UISpecialFrames={}
+UIParent=object();Minimap=object();Minimap:SetSize(200,200);UISpecialFrames={}
 DEFAULT_CHAT_FRAME={AddMessage=function() end};SlashCmdList={}
 ForeverUtilitiesDB={x=70,y=-123,scale=1.3,locked=false,enabled=false}
 ForeverSwingDB={x=123,cue=0.7}
@@ -71,6 +75,8 @@ for _,key in ipairs({'showRange','showAmmo','lowAmmoWarning','petMendWarning','m
 end
 local mini=named.ForeverHunterFriendMinimap
 check(mini and mini.shown,'minimap button available even when bar disabled')
+check(mini.width==28 and mini.height==28,'compact minimap button')
+check(math.abs(math.sqrt(mini.x^2+mini.y^2)-103)<0.01,'button sits on minimap rim')
 mini.scripts.OnClick();check(panel.shown,'minimap opens settings')
 local lock=named.ForeverHunterFriendLock
 local wasLocked=db.locked;lock.scripts.OnClick()

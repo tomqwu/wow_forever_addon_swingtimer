@@ -76,10 +76,31 @@ local function RefreshMinimap()
     if not Hunter.IsHunter() or not Minimap then return end
     if not minimapButton then
         minimapButton=CreateFrame('Button','ForeverHunterFriendMinimap',Minimap)
-        minimapButton:SetSize(30,30);minimapButton:SetPoint('CENTER',Minimap,'CENTER',54,54)
+        minimapButton:SetSize(28,28)
+        local function Position()
+            local width,height=Minimap:GetWidth(),Minimap:GetHeight()
+            if not NS.Core.IsNumber(width) or width<=0 then width=140 end
+            if not NS.Core.IsNumber(height) or height<=0 then height=140 end
+            local angle=math.rad(35)
+            minimapButton:ClearAllPoints()
+            minimapButton:SetPoint('CENTER',Minimap,'CENTER',math.cos(angle)*(width/2+3),math.sin(angle)*(height/2+3))
+        end
+        Position();Minimap:HookScript('OnSizeChanged',Position)
         minimapButton:SetFrameStrata('MEDIUM');minimapButton:SetFrameLevel(8)
-        minimapButton:SetNormalTexture('Interface\\Icons\\Ability_Marksmanship')
-        minimapButton:SetHighlightTexture('Interface\\Buttons\\ButtonHilight-Square','ADD')
+        local function Circle(size,layer)
+            local texture=minimapButton:CreateTexture(nil,layer)
+            texture:SetSize(size,size);texture:SetPoint('CENTER')
+            local mask=minimapButton:CreateMaskTexture()
+            mask:SetTexture('Interface\\CHARACTERFRAME\\TempPortraitAlphaMask','CLAMPTOBLACKADDITIVE','CLAMPTOBLACKADDITIVE')
+            mask:SetSize(size,size);mask:SetPoint('CENTER');texture:AddMaskTexture(mask)
+            return texture
+        end
+        Circle(28,'BACKGROUND'):SetColorTexture(0.08,0.07,0.04,1)
+        Circle(26,'BORDER'):SetColorTexture(0.72,0.57,0.25,1)
+        Circle(22,'ARTWORK'):SetColorTexture(0.025,0.035,0.025,1)
+        local icon=Circle(19,'OVERLAY')
+        icon:SetTexture('Interface\\Icons\\Ability_Marksmanship');icon:SetTexCoord(0.08,0.92,0.08,0.92)
+        local highlight=Circle(24,'HIGHLIGHT');highlight:SetColorTexture(1,0.85,0.4,0.22)
         minimapButton:SetScript('OnClick',OpenPanel)
         minimapButton:SetScript('OnEnter',function(self)
             if GameTooltip then
@@ -117,7 +138,7 @@ SlashCmdList.FOREVERUTILITIES=function(message)
         db.scale=value;Hunter.Apply()
     elseif command=='reset' then Hunter.Reset()
     elseif command=='status' then
-        Say('v0.13.0 | '..(db.enabled and 'Enabled' or 'Disabled'))
+        Say('v0.13.1 | '..(db.enabled and 'Enabled' or 'Disabled'))
         if db.enabled and Hunter.instance then Say(Hunter.instance.Status()) end
     else Say('/fhunter: unlock | lock | on | off | scale 0.5..2 | reset | status') end
 end
