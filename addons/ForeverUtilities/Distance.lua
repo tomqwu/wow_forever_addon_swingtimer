@@ -14,7 +14,7 @@ NS.Modules.Register({
     options={
         {key='locked',label='Lock indicator position',kind='toggle'},
         {key='scale',label='Indicator size',kind='number',min=0.5,max=2,step=0.1},
-        {key='showTargetTarget',label='Show target of target',kind='toggle'},
+        {key='showTargetTarget',label='Show target-of-target portrait',kind='toggle'},
         {key='showAngle',label='Show facing angle',kind='toggle'},
     },
     create=function(db)

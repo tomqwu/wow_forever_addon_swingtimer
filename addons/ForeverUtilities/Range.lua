@@ -96,28 +96,37 @@ function Range.Create(host, db)
     label:SetHeight(44)
     label:SetJustifyH('LEFT')
     label:SetWordWrap(true)
-    local targetLabel=frame:CreateFontString(nil,'OVERLAY','GameFontHighlight')
+    local portrait=frame:CreateTexture(nil,'ARTWORK',nil,1)
+    portrait:SetSize(38,38);portrait:SetPoint('RIGHT',frame,'RIGHT',-12,0)
+    portrait:Hide()
     local angleLabel=frame:CreateFontString(nil,'OVERLAY','GameFontHighlight')
-    for _,text in ipairs({targetLabel,angleLabel}) do
-        text:SetFont(STANDARD_TEXT_FONT or 'Fonts\\FRIZQT__.TTF',12,'OUTLINE')
-        text:SetJustifyH('LEFT');text:SetWordWrap(false);text:SetWidth(146)
-        text:SetTextColor(0.9,0.93,1)
-    end
+    angleLabel:SetFont(STANDARD_TEXT_FONT or 'Fonts\\FRIZQT__.TTF',12,'OUTLINE')
+    angleLabel:SetJustifyH('LEFT');angleLabel:SetWordWrap(false)
+    angleLabel:SetTextColor(0.9,0.93,1)
+    angleLabel:SetPoint('TOPLEFT',frame,'TOPLEFT',66,-40)
     local function ContextLayout()
         frame:SetHeight(NS.TargetContext.Height(db))
-        targetLabel:SetShown(db.showTargetTarget~=false)
         angleLabel:SetShown(db.showAngle~=false)
-        local hasContext=db.showTargetTarget~=false or db.showAngle~=false
-        label:SetWidth(hasContext and 172 or 322)
-        targetLabel:ClearAllPoints();targetLabel:SetPoint('TOPLEFT',frame,'TOPLEFT',244,db.showAngle~=false and -11 or -21)
-        angleLabel:ClearAllPoints();angleLabel:SetPoint('TOPLEFT',frame,'TOPLEFT',244,db.showTargetTarget~=false and -32 or -21)
+        local width=db.showTargetTarget~=false and 270 or 322
+        label:SetWidth(width);angleLabel:SetWidth(width)
+        label:SetHeight(db.showAngle~=false and 32 or 44)
+        if db.showTargetTarget==false then portrait:Hide() end
     end
     local function ClearContext()
-        targetLabel:SetText('ToT: —');angleLabel:SetText('Angle: —')
+        portrait:Hide();portrait:SetTexture(nil);angleLabel:SetText('')
     end
     local function UpdateContext()
-        if db.showTargetTarget~=false then targetLabel:SetText((NS.TargetContext.TargetTarget():gsub('^Target of target:', 'ToT:'))) end
-        if db.showAngle~=false then angleLabel:SetText((NS.TargetContext.AngleText():gsub(' %(straight ahead%)',' ahead'):gsub(' %(behind%)',' behind'))) end
+        -- Clear first: an absent/restricted new unit must never retain the old portrait.
+        portrait:Hide();portrait:SetTexture(nil)
+        if db.showTargetTarget~=false and Call(UnitExists,'targettarget')==true
+            and type(SetPortraitTexture)=='function' then
+            local ok=pcall(SetPortraitTexture,portrait,'targettarget')
+            if ok then portrait:Show() end
+        end
+        if db.showAngle~=false then
+            local angle=NS.TargetContext.ReadAngle()
+            angleLabel:SetText(Core.IsNumber(angle) and string.format('%+.0f°',angle) or '')
+        end
     end
     local spells, shot, elapsed = {}, nil, 0
     local function Discover()
@@ -199,7 +208,7 @@ function Range.Create(host, db)
     end
     local active=false
     local rangeEvents={'PLAYER_TARGET_CHANGED','SPELLS_CHANGED','PLAYER_ENTERING_WORLD',
-        'PLAYER_LEAVING_WORLD','PLAYER_DEAD','PLAYER_EQUIPMENT_CHANGED','UNIT_FLAGS','UNIT_TARGET','UNIT_NAME_UPDATE'}
+        'PLAYER_LEAVING_WORLD','PLAYER_DEAD','PLAYER_EQUIPMENT_CHANGED','UNIT_FLAGS','UNIT_TARGET','UNIT_NAME_UPDATE','UNIT_PORTRAIT_UPDATE'}
     local function Refresh()
         frame:SetScript('OnUpdate',nil)
         frame:SetShown(db.enabled)
@@ -231,7 +240,7 @@ function Range.Create(host, db)
     frame:SetScript('OnEvent',function(_,event,unit)
         if not db.enabled then return end
         if event=='UNIT_TARGET' and (not Core.IsReadable(unit) or unit~='target') then return end
-        if event=='UNIT_NAME_UPDATE' and (not Core.IsReadable(unit) or (unit~='target' and unit~='targettarget')) then return end
+        if (event=='UNIT_NAME_UPDATE' or event=='UNIT_PORTRAIT_UPDATE') and (not Core.IsReadable(unit) or (unit~='target' and unit~='targettarget')) then return end
         if event=='UNIT_FLAGS' and (not Core.IsReadable(unit) or unit~='target') then return end
         if event=='PLAYER_LEAVING_WORLD' or event=='PLAYER_DEAD' then
             frame:SetScript('OnUpdate',nil); ClearContext(); Paint('unknown','Range inactive'); return

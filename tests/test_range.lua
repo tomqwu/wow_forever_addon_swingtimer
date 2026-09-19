@@ -62,6 +62,8 @@ function methods:SetColorTexture(r,g,b,a) self.color={r,g,b,a} end
 function methods:CreateFontString() local f=setmetatable({}, {__index=methods});self.labels=rawget(self,'labels') or {};table.insert(self.labels,f);self.label=self.labels[1];return f end
 function methods:SetText(t) self.text=t end
 function methods:SetShown(v) self.shown=v end
+function methods:Show() self.shown=true end
+function methods:Hide() self.shown=false end
 function methods:SetAlpha(v) self.alpha=v end
 setmetatable(methods,{__index=function() return function() end end})
 CreateFrame=function() local f=setmetatable({scripts={},events={}},{__index=methods});frames[#frames+1]=f;return f end
@@ -160,29 +162,35 @@ UnitDistanceSquared=nil
 class='HUNTER';C_Spell=nil;C_SpellBook=nil
 f=NS.Range.Create({},db)
 check(f.label.text:find('Range unavailable',1,true),'missing APIs degrade safely')
--- Context shares the module lifecycle and responds to target changes.
-local targetName='Tank'
-UnitName=function() return targetName end
-UnitIsUnit=function() return false end
-UnitExists=function(unit) return target end
+-- Portrait and numeric angle share the module lifecycle.
+UnitExists=function() return target end
 GetPlayerFacing=function() return 0 end
 UnitPosition=function(unit) if unit=='player' then return 0,0,0,1 end return 0,10,0,1 end
+local portraits=0
+SetPortraitTexture=function(texture,unit) portraits=portraits+1;texture.unit=unit end
 target=true;dead=false;f.Refresh()
-check(f.labels[2].text=='ToT: Tank' and f.labels[3].text=='Angle: 90° left','context shown alongside range')
-targetName='Healer';f.scripts.OnEvent(f,'UNIT_TARGET','target')
-check(f.labels[2].text=='ToT: Healer','targettarget change updates immediately')
-targetName='Renamed';f.scripts.OnEvent(f,'UNIT_NAME_UPDATE','targettarget')
-check(f.labels[2].text=='ToT: Renamed','targettarget name updates')
+local portrait=f.textures[#f.textures]
+check(portrait.unit=='targettarget' and portrait.shown,'right icon uses targettarget portrait')
+check(f.labels[2].text=='+90°','angle has no wording')
+local before=portraits;f.scripts.OnEvent(f,'UNIT_TARGET','target')
+check(portraits>before,'targettarget change refreshes portrait')
+before=portraits;f.scripts.OnEvent(f,'UNIT_PORTRAIT_UPDATE','targettarget')
+check(portraits>before,'portrait event refreshes icon')
+UnitExists=function(unit) return unit=='target' end
+f.Refresh();check(not portrait.shown,'missing targettarget hides portrait')
+UnitExists=function() return true end
+SetPortraitTexture=function() error('unavailable') end
+f.Refresh();check(not portrait.shown,'failed portrait API clears stale portrait')
 UnitPosition=nil;f.scripts.OnUpdate(f,0.15)
-check(f.labels[3].text=='Angle unavailable','restricted positions clear old angle')
-target=false;f.scripts.OnEvent(f,'PLAYER_TARGET_CHANGED')
-check(f.labels[2].text=='ToT: —' and f.labels[3].text=='Angle: —','target loss clears context')
+check(f.labels[2].text=='','unavailable angle has no wording')
+UnitExists=function() return false end;f.Refresh()
+check(not portrait.shown and f.labels[2].text=='','target loss clears context')
 local queries=0
-UnitName=function() queries=queries+1;return 'Tank' end
+SetPortraitTexture=function() queries=queries+1 end
 GetPlayerFacing=function() queries=queries+1;return 0 end
-db.showTargetTarget=false;db.showAngle=false;target=true;f.Refresh()
-f.scripts.OnUpdate(f,0.15)
-check(queries==0,'disabled context rows do not query APIs')
+UnitExists=function() return true end
+db.showTargetTarget=false;db.showAngle=false;f.Refresh();f.scripts.OnUpdate(f,0.15)
+check(queries==0,'disabled context does not query APIs')
 db.enabled=false;f.Refresh()
-check(not f.events.UNIT_TARGET and not f.events.UNIT_NAME_UPDATE and not f.scripts.OnUpdate,'disable removes context events and polling')
+check(not f.events.UNIT_TARGET and not f.events.UNIT_PORTRAIT_UPDATE and not f.scripts.OnUpdate,'disable removes context listeners')
 print('PASS: '..count..' distance checks')

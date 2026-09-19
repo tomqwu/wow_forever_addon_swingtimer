@@ -1,3 +1,12 @@
+## 0.5.2
+
+- Replaced target-of-target wording with a portrait on the right, opposite the weapon icon.
+- Kept the compact bar and reclaimed central space for distance.
+- Optional facing angle is now signed degrees only; unavailable readings are hidden.
+- Portraits clear on target loss or API failure and refresh when the target’s target changes.
+
+Use `/reload` to apply the update.
+
 ## 0.5.1
 
 - Restored the original 400 × 56 distance bar footprint.
