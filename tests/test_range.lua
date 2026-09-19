@@ -92,11 +92,20 @@ target=false;f.scripts.OnEvent(f,'PLAYER_TARGET_CHANGED')
 check(not f.scripts.OnUpdate and f.label.text=='No target','no target stops polling')
 check(f.alpha==0.2,'no target dims indicator')
 db.locked=false;f.Refresh()
-check(f.alpha==1 and not f.scripts.OnUpdate,'unlock keeps no-target UI visible without polling')
+check(f.alpha==0.2 and not f.scripts.OnUpdate,'unlock preserves idle dimming without polling')
 db.locked=true;f.Refresh()
 check(f.alpha==0.2,'locking restores no-target dimming')
 target=true;f.scripts.OnEvent(f,'PLAYER_TARGET_CHANGED')
-check(f.alpha==1,'acquiring target restores full visibility')
+check(f.alpha==0.6,'out of combat target stays partly dimmed')
+local combat=false
+UnitAffectingCombat=function() return combat end
+for _,locked in ipairs({true,false}) do
+ db.locked=locked;combat=true;f.scripts.OnEvent(f,'PLAYER_REGEN_DISABLED')
+ check(f.alpha==1 and f.scripts.OnUpdate,'combat restores visibility and updates regardless of lock')
+ combat=false;f.scripts.OnEvent(f,'PLAYER_REGEN_ENABLED')
+ check(f.alpha==0.6 and f.scripts.OnUpdate,'leaving combat dims without stopping target updates')
+end
+db.locked=true
 target=true;dead=true;f.Refresh()
 check(not f.scripts.OnUpdate,'dead target stops polling')
 dead=false;db.enabled=false;f.Refresh()

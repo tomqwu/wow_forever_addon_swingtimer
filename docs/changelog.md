@@ -1,3 +1,11 @@
+## 0.8.2
+
+- Unlocking the bar no longer forces full opacity; dragging keeps the same visibility and updates as locked mode.
+- Full opacity in combat, 60% with a target outside combat, and 20% without a target outside combat.
+- Combat events update visibility immediately, without adding idle polling.
+
+Use `/reload` to apply the fix.
+
 ## 0.8.1
 
 - Friendly targets without a distance reading show only “Friendly target”.

@@ -10,7 +10,7 @@ you need at a glance without a toolbox or module selector.
 - **Target-of-target portrait:** a small portrait on the right shows who your target is targeting, without extra wording.
 - **Optional facing angle:** signed degrees relative to your character: positive left, negative right, zero ahead. Hidden when valid position data is unavailable.
 - **Compact and movable:** the bar stays 400 × 56, with adjustable scale and position.
-- **Quiet while idle:** no target dims the bar to 20%; disabled means no bar updates or event listeners.
+- **Quiet while idle:** full opacity in combat, 60% with a target outside combat, and 20% without a target. Unlocking only enables dragging and keeps these visibility rules; disabled means no bar updates or event listeners.
 
 ## Range colors
 

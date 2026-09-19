@@ -230,7 +230,7 @@ function Range.Create(host, db)
     end
     local active=false
     local rangeEvents={'PLAYER_TARGET_CHANGED','SPELLS_CHANGED','PLAYER_ENTERING_WORLD',
-        'PLAYER_LEAVING_WORLD','PLAYER_DEAD','PLAYER_EQUIPMENT_CHANGED','UNIT_FLAGS','UNIT_TARGET','UNIT_NAME_UPDATE','UNIT_PORTRAIT_UPDATE','BAG_UPDATE_DELAYED','UNIT_INVENTORY_CHANGED'}
+        'PLAYER_LEAVING_WORLD','PLAYER_DEAD','PLAYER_EQUIPMENT_CHANGED','UNIT_FLAGS','UNIT_TARGET','UNIT_NAME_UPDATE','UNIT_PORTRAIT_UPDATE','BAG_UPDATE_DELAYED','UNIT_INVENTORY_CHANGED','PLAYER_REGEN_DISABLED','PLAYER_REGEN_ENABLED'}
     local function Refresh()
         frame:SetScript('OnUpdate',nil)
         frame:SetShown(db.enabled)
@@ -246,7 +246,8 @@ function Range.Create(host, db)
         end
         UpdateAmmo()
         local hasTarget=Call(UnitExists,'target')==true
-        frame:SetAlpha((hasTarget or db.locked==false) and 1 or 0.2)
+        local inCombat=Call(UnitAffectingCombat,'player')==true
+        frame:SetAlpha(inCombat and 1 or (hasTarget and 0.6 or 0.2))
         if not hasTarget then ClearContext(); Paint('unknown','No target'); return end
         if Call(UnitIsDead,'target')~=false then
             ClearContext(); Paint('unknown','Target dead or unavailable'); return
