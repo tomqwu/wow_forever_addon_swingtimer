@@ -33,7 +33,7 @@ end
 local function OpenPanel()
     if not panel then
         panel=CreateFrame('Frame','ForeverHunterFriendOptions',UIParent)
-        panel:SetSize(420,180+#Hunter.options*42);panel:SetPoint('CENTER');panel:SetFrameStrata('DIALOG')
+        panel:SetSize(760,440);panel:SetPoint('CENTER');panel:SetFrameStrata('DIALOG')
         panel:SetClampedToScreen(true);panel:EnableMouse(true)
         local bg=panel:CreateTexture(nil,'BACKGROUND');bg:SetAllPoints();bg:SetColorTexture(0.025,0.03,0.045,0.98)
         Text(panel,"Forever - Hunter's Friend",20,-18,'GameFontNormalLarge')
@@ -41,31 +41,53 @@ local function OpenPanel()
         panel.enabled=Check(panel,'Enable hunter bar',20,-78,function(value) Hunter.SetEnabled(value) end)
         panel.controls={}
         local y=-120
-        for _,option in ipairs(Hunter.options) do
+        for index,option in ipairs(Hunter.options) do
             local key=option.key
+            local x=index<=6 and 20 or 390
+            y=-120-((index-1)%6)*42
             if option.kind=='toggle' then
-                panel.controls[key]=Check(panel,option.label,20,y,function(value)
+                panel.controls[key]=Check(panel,option.label,x,y,function(value)
                     Hunter.db[key]=value;Hunter.Apply()
                 end)
             else
-                Text(panel,option.label,20,y-6)
-                panel.controls[key]=Text(panel,'',230,y-6)
+                Text(panel,option.label,x,y-6)
+                panel.controls[key]=Text(panel,'',x+210,y-6)
                 local function Adjust(delta)
                     Hunter.db[key]=math.max(option.min,math.min(option.max,Hunter.db[key]+delta))
                     Hunter.Apply()
                 end
-                Button(panel,'-',190,y,28,function() Adjust(-option.step) end)
-                Button(panel,'+',295,y,28,function() Adjust(option.step) end)
+                Button(panel,'-',x+170,y,28,function() Adjust(-option.step) end)
+                Button(panel,'+',x+275,y,28,function() Adjust(option.step) end)
             end
             y=y-42
         end
-        Button(panel,'Reset settings',20,y-10,150,function() Hunter.Reset() end)
-        Button(panel,'Close',320,y-10,80,function() panel:Hide() end)
+        Button(panel,'Reset settings',20,-390,150,function() Hunter.Reset() end)
+        Button(panel,'Close',660,-390,80,function() panel:Hide() end)
         if UISpecialFrames then table.insert(UISpecialFrames,'ForeverHunterFriendOptions') end
     end
     panel:Show();RefreshPanel()
 end
-Hunter.changed=RefreshPanel
+local minimapButton
+local function RefreshMinimap()
+    if not Hunter.IsHunter() or not Minimap then return end
+    if not minimapButton then
+        minimapButton=CreateFrame('Button','ForeverHunterFriendMinimap',Minimap)
+        minimapButton:SetSize(30,30);minimapButton:SetPoint('CENTER',Minimap,'CENTER',54,54)
+        minimapButton:SetFrameStrata('MEDIUM');minimapButton:SetFrameLevel(8)
+        minimapButton:SetNormalTexture('Interface\\Icons\\Ability_Marksmanship')
+        minimapButton:SetHighlightTexture('Interface\\Buttons\\ButtonHilight-Square','ADD')
+        minimapButton:SetScript('OnClick',OpenPanel)
+        minimapButton:SetScript('OnEnter',function(self)
+            if GameTooltip then
+                GameTooltip:SetOwner(self,'ANCHOR_LEFT');GameTooltip:SetText("Hunter's Friend")
+                GameTooltip:AddLine('Click to open settings.',1,1,1);GameTooltip:Show()
+            end
+        end)
+        minimapButton:SetScript('OnLeave',function() if GameTooltip then GameTooltip:Hide() end end)
+    end
+    minimapButton:SetShown(Hunter.db.showMinimap~=false)
+end
+Hunter.changed=function() RefreshPanel();RefreshMinimap() end
 events:RegisterEvent('ADDON_LOADED')
 events:SetScript('OnEvent',function(self,_,name)
     if name~=addon then return end
@@ -91,7 +113,7 @@ SlashCmdList.FOREVERUTILITIES=function(message)
         db.scale=value;Hunter.Apply()
     elseif command=='reset' then Hunter.Reset()
     elseif command=='status' then
-        Say('v0.11.0 | '..(db.enabled and 'Enabled' or 'Disabled'))
+        Say('v0.12.0 | '..(db.enabled and 'Enabled' or 'Disabled'))
         if db.enabled and Hunter.instance then Say(Hunter.instance.Status()) end
     else Say('/fhunter: unlock | lock | on | off | scale 0.5..2 | reset | status') end
 end

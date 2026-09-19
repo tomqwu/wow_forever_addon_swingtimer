@@ -28,7 +28,7 @@ CreateFrame=function(_,name,parent)
  local f=object();f.name=name;f.parent=parent;frames[#frames+1]=f
  if name then named[name]=f end;return f
 end
-UIParent=object();UISpecialFrames={}
+UIParent=object();Minimap=object();UISpecialFrames={}
 DEFAULT_CHAT_FRAME={AddMessage=function() end};SlashCmdList={}
 ForeverUtilitiesDB={x=70,y=-123,scale=1.3,locked=false,enabled=false}
 ForeverSwingDB={x=123,cue=0.7}
@@ -65,6 +65,17 @@ for _,key in ipairs({'showRange','showAmmo','lowAmmoWarning','petMendWarning','m
  control:SetChecked(false);control.scripts.OnClick(control)
  check(db[key]==false,'checkbox saves: '..key)
 end
+local mini=named.ForeverHunterFriendMinimap
+check(mini and mini.shown,'minimap button available even when bar disabled')
+mini.scripts.OnClick();check(panel.shown,'minimap opens settings')
+local lock=named.ForeverHunterFriendLock
+local wasLocked=db.locked;lock.scripts.OnClick()
+check(db.locked~=wasLocked and panel.controls.locked.checked==db.locked,'bar lock toggles and syncs settings')
+lock.scripts.OnClick();check(db.locked==wasLocked,'bar lock toggles back')
+local control=panel.controls.showMinimap;control:SetChecked(false);control.scripts.OnClick(control)
+check(not mini.shown,'minimap button setting hides button')
+control=panel.controls.showLockButton;control:SetChecked(false);control.scripts.OnClick(control)
+check(not lock.shown,'lock button setting hides button')
 local saved={modules={distance={enabled=false,x=81,scale=1.2,showAngle=false}},schemaVersion=1}
 NS.Hunter.instance=nil;NS.Hunter.Initialize(saved)
 check(NS.Hunter.db.x==81 and NS.Hunter.db.scale==1.2 and not NS.Hunter.db.showAngle,'toolbox preferences migrated')

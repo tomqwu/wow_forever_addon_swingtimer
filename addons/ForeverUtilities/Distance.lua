@@ -10,8 +10,10 @@ end
 NS.Hunter = {
     name="Forever - Hunter's Friend",
     description='Hunter range, ammunition, and target awareness.',
-    defaults={enabled=true,locked=true,x=0,y=-210,scale=1,showTargetTarget=true,showAngle=true,showRange=true,showAmmo=true,lowAmmoWarning=true,petMendWarning=true,markWarning=true,fadeOutOfCombat=true}, normalize=Normalize,
+    defaults={enabled=true,locked=true,x=0,y=-210,scale=1,showTargetTarget=true,showAngle=true,showRange=true,showAmmo=true,lowAmmoWarning=true,petMendWarning=true,markWarning=true,fadeOutOfCombat=true,showMinimap=true,showLockButton=true}, normalize=Normalize,
     options={
+        {key='showMinimap',label='Show minimap settings button',kind='toggle'},
+        {key='showLockButton',label='Show lock button on bar',kind='toggle'},
         {key='locked',label='Lock indicator position',kind='toggle'},
         {key='scale',label='Indicator size',kind='number',min=0.5,max=2,step=0.1},
         {key='showTargetTarget',label='Show target-of-target portrait',kind='toggle'},
@@ -30,6 +32,26 @@ NS.Hunter = {
         host.hint=host:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall')
         host.hint:SetPoint('BOTTOM',host,'TOP',0,4)
         local indicator=NS.Range.Create(host,db)
+        local lock=CreateFrame('Button','ForeverHunterFriendLock',indicator)
+        lock:SetSize(18,24);lock:SetPoint('RIGHT',host,'RIGHT',-1,0)
+        lock:EnableMouse(true)
+        local function Block(width,height,x,y)
+            local texture=lock:CreateTexture(nil,'OVERLAY')
+            texture:SetSize(width,height);texture:SetPoint('TOPLEFT',lock,'TOPLEFT',x,y)
+            return texture
+        end
+        local body=Block(12,9,3,-11)
+        local left=Block(2,7,5,-4)
+        local top=Block(8,2,5,-4)
+        local right=Block(2,7,11,-4)
+        lock:SetScript('OnClick',function() db.locked=not db.locked;NS.Hunter.Apply() end)
+        lock:SetScript('OnEnter',function(self)
+            if GameTooltip then
+                GameTooltip:SetOwner(self,'ANCHOR_TOP')
+                GameTooltip:SetText(db.locked and 'Unlock bar to move' or 'Lock bar position');GameTooltip:Show()
+            end
+        end)
+        lock:SetScript('OnLeave',function() if GameTooltip then GameTooltip:Hide() end end)
         local function Apply()
             host:SetShown(db.enabled)
             host:SetSize(400,NS.TargetContext.Height(db))
@@ -37,6 +59,12 @@ NS.Hunter = {
             host:SetPoint('CENTER',UIParent,'CENTER',db.x,db.y)
             host:EnableMouse(db.enabled and not db.locked)
             host.hint:SetText(db.locked and '' or 'Drag to move | /fhunter lock')
+            lock:SetShown(db.showLockButton~=false)
+            right:SetShown(db.locked)
+            for _,texture in ipairs({body,left,top,right}) do
+                if db.locked then texture:SetColorTexture(0.8,0.85,0.9,1)
+                else texture:SetColorTexture(0.3,1,0.5,1) end
+            end
             indicator.Refresh()
         end
         host:SetScript('OnDragStart',function(self) if db.enabled and not db.locked then self:StartMoving() end end)

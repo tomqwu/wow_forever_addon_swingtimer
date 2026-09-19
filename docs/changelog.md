@@ -1,3 +1,12 @@
+## 0.12.0
+
+- Added an upper-right minimap button that opens Hunter’s Friend settings, even when the bar is disabled.
+- Added a small padlock on the bar to toggle movement. Green means unlocked; tooltips explain the action.
+- Added separate visibility switches for both buttons and arranged settings into two columns.
+- Locking retains normal fading and live updates; the bar remains 400 × 56.
+
+Use `/reload` to enable the new buttons.
+
 ## 0.11.0
 
 - Replaced Hunter’s Mark wording with the learned spell’s icon and a bright gold border when missing.

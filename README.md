@@ -39,7 +39,11 @@ The folder name is retained for seamless upgrades; the addon appears in WoW as
 **Forever - Hunter's Friend**. Restart for first installation, or use `/reload`
 for updates. The bar runs only on hunter characters.
 
-Open `/fhunter` for a single settings panel: enable the bar, lock its position,
+Click the button at the upper-right of the minimap or use `/fhunter` to open settings.
+The small padlock at the right edge of the bar toggles dragging; unlocked is green.
+Both buttons have visibility switches in settings. Locking never changes fading or live updates.
+
+Use the settings panel to enable the bar, lock its position,
 change scale, or independently toggle range, ammo count, low-ammo warnings, the
 portrait, pet-health highlight, facing angle, Hunter’s Mark icon, and idle fading.
 Pet-health highlighting requires the portrait to be visible. The mark icon and
