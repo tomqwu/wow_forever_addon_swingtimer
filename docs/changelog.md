@@ -1,3 +1,10 @@
+## 0.12.1
+
+- Settings window is draggable by default using its title or background, without unlocking the hunter bar.
+- Reopening settings retains its position during the session. Closing while dragging stops movement cleanly.
+
+Use `/reload` to apply the update.
+
 ## 0.12.0
 
 - Added an upper-right minimap button that opens Hunter’s Friend settings, even when the bar is disabled.

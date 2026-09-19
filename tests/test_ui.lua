@@ -13,6 +13,9 @@ function methods:UnregisterEvent(e) self.events[e]=nil end
 function methods:CreateFontString() return object() end
 function methods:CreateTexture() return object() end
 function methods:SetText(v) self.text=v end
+function methods:SetMovable(v) self.movable=v end
+function methods:StartMoving() self.moving=true end
+function methods:StopMovingOrSizing() self.moving=false end
 function methods:SetScale(v) self.scale=v end
 function methods:EnableMouse(v) self.mouse=v end
 function methods:SetShown(v) self.shown=v end
@@ -76,6 +79,11 @@ local control=panel.controls.showMinimap;control:SetChecked(false);control.scrip
 check(not mini.shown,'minimap button setting hides button')
 control=panel.controls.showLockButton;control:SetChecked(false);control.scripts.OnClick(control)
 check(not lock.shown,'lock button setting hides button')
+check(panel.movable,'settings movable by default')
+panel.scripts.OnDragStart(panel);check(panel.moving,'settings drag starts without unlock')
+panel.scripts.OnDragStop(panel);check(not panel.moving,'settings drag stops')
+panel.scripts.OnDragStart(panel);panel.scripts.OnHide(panel)
+check(not panel.moving,'closing settings cancels drag')
 local saved={modules={distance={enabled=false,x=81,scale=1.2,showAngle=false}},schemaVersion=1}
 NS.Hunter.instance=nil;NS.Hunter.Initialize(saved)
 check(NS.Hunter.db.x==81 and NS.Hunter.db.scale==1.2 and not NS.Hunter.db.showAngle,'toolbox preferences migrated')

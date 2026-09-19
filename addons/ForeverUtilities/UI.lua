@@ -35,9 +35,13 @@ local function OpenPanel()
         panel=CreateFrame('Frame','ForeverHunterFriendOptions',UIParent)
         panel:SetSize(760,440);panel:SetPoint('CENTER');panel:SetFrameStrata('DIALOG')
         panel:SetClampedToScreen(true);panel:EnableMouse(true)
+        panel:SetMovable(true);panel:RegisterForDrag('LeftButton')
+        panel:SetScript('OnDragStart',function(self) self:StartMoving() end)
+        panel:SetScript('OnDragStop',function(self) self:StopMovingOrSizing() end)
+        panel:SetScript('OnHide',function(self) self:StopMovingOrSizing() end)
         local bg=panel:CreateTexture(nil,'BACKGROUND');bg:SetAllPoints();bg:SetColorTexture(0.025,0.03,0.045,0.98)
         Text(panel,"Forever - Hunter's Friend",20,-18,'GameFontNormalLarge')
-        Text(panel,'Range, ammunition, and target awareness.',20,-48,'GameFontHighlightSmall')
+        Text(panel,'Drag this window to move it.',20,-48,'GameFontHighlightSmall')
         panel.enabled=Check(panel,'Enable hunter bar',20,-78,function(value) Hunter.SetEnabled(value) end)
         panel.controls={}
         local y=-120
@@ -113,7 +117,7 @@ SlashCmdList.FOREVERUTILITIES=function(message)
         db.scale=value;Hunter.Apply()
     elseif command=='reset' then Hunter.Reset()
     elseif command=='status' then
-        Say('v0.12.0 | '..(db.enabled and 'Enabled' or 'Disabled'))
+        Say('v0.12.1 | '..(db.enabled and 'Enabled' or 'Disabled'))
         if db.enabled and Hunter.instance then Say(Hunter.instance.Status()) end
     else Say('/fhunter: unlock | lock | on | off | scale 0.5..2 | reset | status') end
 end
