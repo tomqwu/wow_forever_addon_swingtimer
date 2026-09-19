@@ -259,11 +259,16 @@ C_Spell={GetSpellInfo=function() return {name="Hunter's Mark",minRange=0,maxRang
 local marked=false
 C_UnitAuras={GetAuraDataByIndex=function(_,i) if marked and i==1 then return {name="Hunter's Mark"} end end}
 f.scripts.OnEvent(f,'SPELLS_CHANGED')
+check(not f.markIcon.shown,'mark reminder stays hidden outside combat')
+combat=true;f.scripts.OnEvent(f,'PLAYER_REGEN_DISABLED')
 check(f.markIcon.shown,'missing learned mark shows compact warning')
 marked=true;f.scripts.OnEvent(f,'UNIT_AURA','target')
 check(not f.markIcon.shown,'applying mark immediately clears warning')
 marked=false;f.scripts.OnEvent(f,'UNIT_AURA','target')
 check(f.markIcon.shown,'expired mark restores reminder')
+combat=false;f.scripts.OnEvent(f,'PLAYER_REGEN_ENABLED')
+check(not f.markIcon.shown,'leaving combat clears reminder immediately')
+combat=true;f.scripts.OnEvent(f,'PLAYER_REGEN_DISABLED')
 UnitExists=function() return false end;f.Refresh()
 check(not f.markIcon.shown,'target loss clears mark reminder')
 db.enabled=false;f.Refresh();check(not f.events.UNIT_AURA,'disable removes aura listener')

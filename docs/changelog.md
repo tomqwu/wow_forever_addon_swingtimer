@@ -1,3 +1,10 @@
+## 0.13.3
+
+- Hunter’s Mark reminder now appears only while you are in combat with a living enemy target selected.
+- Entering/leaving combat updates the icon immediately; selecting enemies outside combat stays quiet.
+
+Use `/reload` to apply the change.
+
 ## 0.13.2
 
 - Left-drag the minimap icon around the minimap edge; its angle is saved between sessions.

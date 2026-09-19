@@ -2,7 +2,7 @@
 ## Title: Forever - Hunter's Friend
 ## Notes: Hunter range, ammo count, target-of-target portrait, and facing angle for WoW Forever.
 ## Author: Codex
-## Version: 0.13.2
+## Version: 0.13.3
 ## SavedVariables: ForeverUtilitiesDB
 Core.lua
 TargetContext.lua

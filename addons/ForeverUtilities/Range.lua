@@ -186,7 +186,8 @@ function Range.Create(host, db)
                 petHighlight:SetShown(db.petMendWarning~=false and NS.TargetContext.PetNeedsMend('targettarget'))
             end
         end
-        local missing=db.markWarning~=false and NS.TargetContext.MarkMissing(markName)==true
+        local missing=db.markWarning~=false and Call(UnitAffectingCombat,'player')==true
+            and NS.TargetContext.MarkMissing(markName)==true
         markIcon:SetShown(missing);markBorder:SetShown(missing)
         angleLabel:SetShown(db.showAngle~=false)
         if db.showAngle~=false then

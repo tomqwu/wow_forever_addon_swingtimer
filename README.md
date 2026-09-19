@@ -10,7 +10,7 @@ you need at a glance without a toolbox or module selector.
 - **Range at a glance:** a colored weapon icon and readable range text.
 - **Ammo below the range text:** a small count of your selected ammunition carried in bags, excluding banks. Inventory changes update it even without a target. At 200 or fewer, the count turns red and a one-time low-ammo warning appears. Restocking above 200 rearms the warning. An empty hunter ammo slot shows zero.
 - **Target-of-target portrait:** a small portrait on the right shows who your target is targeting, without extra wording.
-- **Hunter's Mark reminder:** a highlighted spell icon appears when your living enemy target has no readable Hunter's Mark debuff and you have learned the spell. It clears when marked, including by another hunter. Unavailable aura data stays quiet.
+- **Hunter's Mark reminder:** a highlighted spell icon appears only while you are in combat and your living enemy target has no readable Hunter's Mark debuff and you have learned the spell. It clears when marked, including by another hunter. Unavailable aura data stays quiet.
 - **Mend Pet reminder:** the right-hand portrait gets a red border when it shows your own living pet at 30% health or below. The border clears when healed or the target changes. This is a visual reminder, not an automatic cast.
 - **Optional facing angle:** signed degrees relative to your character: positive left, negative right, zero ahead. Hidden when valid position data is unavailable.
 - **Organized blocks:** range and ammo on the left, Mark and angle in a small combat block, pet portrait next, and a lock control at the edge. Subtle dividers keep information distinct. Disabled blocks return space to the range text.
