@@ -128,6 +128,12 @@ function Range.Create(host, db)
             end
         end
     end
+    local markName
+    local markLabel=frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall')
+    markLabel:SetFont(STANDARD_TEXT_FONT or 'Fonts\\FRIZQT__.TTF',12,'OUTLINE')
+    markLabel:SetPoint('TOPLEFT',frame,'TOPLEFT',190,-33);markLabel:SetSize(145,14)
+    markLabel:SetJustifyH('LEFT');markLabel:SetTextColor(1,0.35,0.15)
+    markLabel:SetText("Hunter's Mark!");markLabel:Hide()
     local function ContextLayout()
         frame:SetHeight(NS.TargetContext.Height(db))
         angleLabel:SetShown(db.showAngle~=false)
@@ -138,7 +144,7 @@ function Range.Create(host, db)
         if db.showTargetTarget==false then portrait:Hide() end
     end
     local function ClearContext()
-        petHighlight:Hide();portrait:Hide();portrait:SetTexture(nil);angleLabel:SetText('');label:SetWidth(322)
+        markLabel:Hide();petHighlight:Hide();portrait:Hide();portrait:SetTexture(nil);angleLabel:SetText('');label:SetWidth(322)
     end
     local function UpdateContext()
         -- Clear first: an absent/restricted new unit must never retain the old portrait.
@@ -151,6 +157,9 @@ function Range.Create(host, db)
                 petHighlight:SetShown(NS.TargetContext.PetNeedsMend('targettarget'))
             end
         end
+        local missing=NS.TargetContext.MarkMissing(markName)==true
+        markLabel:SetShown(missing)
+        angleLabel:SetShown(db.showAngle~=false and not missing)
         if db.showAngle~=false then
             local angle=NS.TargetContext.ReadAngle()
             angleLabel:SetText(Core.IsNumber(angle) and string.format('%+.0f°',angle) or '')
@@ -158,7 +167,10 @@ function Range.Create(host, db)
     end
     local spells, shot, elapsed = {}, nil, 0
     local function Discover()
-        spells, shot = {}, nil
+        spells, shot, markName = {}, nil, nil
+        local markInfo=Call(C_Spell and C_Spell.GetSpellInfo,"Hunter's Mark")
+        local wanted=type(markInfo)=='table' and markInfo.name or "Hunter's Mark"
+        if not Core.IsReadable(wanted) then wanted=nil end
         if not C_SpellBook or not C_Spell or not Enum or not Enum.SpellBookSpellBank then return end
         local count = Call(C_SpellBook.GetNumSpellBookSkillLines)
         if not Core.IsNumber(count) then return end
@@ -174,6 +186,9 @@ function Range.Create(host, db)
                         and Call(C_SpellBook.IsSpellKnown,id)==true then
                         seen[id]=true
                         local data=Call(C_Spell.GetSpellInfo,id)
+                        if type(data)=='table' and Core.IsReadable(data.name) and wanted and data.name==wanted then
+                            markName=data.name
+                        end
                         if type(data)=='table' and Core.IsNumber(data.minRange) and Core.IsNumber(data.maxRange)
                             and data.minRange>=0 and data.maxRange>data.minRange then
                             local p={id=id,slot=slot,min=data.minRange,max=data.maxRange}
@@ -236,7 +251,7 @@ function Range.Create(host, db)
     end
     local active=false
     local rangeEvents={'PLAYER_TARGET_CHANGED','SPELLS_CHANGED','PLAYER_ENTERING_WORLD',
-        'PLAYER_LEAVING_WORLD','PLAYER_DEAD','PLAYER_EQUIPMENT_CHANGED','UNIT_FLAGS','UNIT_TARGET','UNIT_NAME_UPDATE','UNIT_PORTRAIT_UPDATE','BAG_UPDATE_DELAYED','UNIT_INVENTORY_CHANGED','PLAYER_REGEN_DISABLED','PLAYER_REGEN_ENABLED','UNIT_HEALTH','UNIT_MAXHEALTH','UNIT_PET'}
+        'PLAYER_LEAVING_WORLD','PLAYER_DEAD','PLAYER_EQUIPMENT_CHANGED','UNIT_FLAGS','UNIT_TARGET','UNIT_NAME_UPDATE','UNIT_PORTRAIT_UPDATE','BAG_UPDATE_DELAYED','UNIT_INVENTORY_CHANGED','PLAYER_REGEN_DISABLED','PLAYER_REGEN_ENABLED','UNIT_HEALTH','UNIT_MAXHEALTH','UNIT_PET','UNIT_AURA'}
     local function Refresh()
         frame:SetScript('OnUpdate',nil)
         frame:SetShown(db.enabled)
@@ -269,6 +284,7 @@ function Range.Create(host, db)
     end
     frame:SetScript('OnEvent',function(_,event,unit)
         if not db.enabled then return end
+        if event=='UNIT_AURA' and (not Core.IsReadable(unit) or unit~='target') then return end
         if (event=='UNIT_HEALTH' or event=='UNIT_MAXHEALTH') and
             (not Core.IsReadable(unit) or (unit~='pet' and unit~='targettarget')) then return end
         if event=='UNIT_PET' and (not Core.IsReadable(unit) or unit~='player') then return end

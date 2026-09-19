@@ -250,4 +250,20 @@ UnitExists=function() return false end;f.Refresh()
 check(not glow.shown,'target loss clears highlight')
 db.enabled=false;f.Refresh()
 check(not f.events.UNIT_HEALTH and not f.events.UNIT_MAXHEALTH and not f.events.UNIT_PET,'disabled removes pet events')
+db.enabled=true;UnitExists=function() return true end;UnitCanAttack=function() return true end
+C_SpellBook={GetNumSpellBookSkillLines=function() return 1 end,
+ GetSpellBookSkillLineInfo=function() return {itemIndexOffset=0,numSpellBookItems=1} end,
+ GetSpellBookItemInfo=function() return {spellID=123456} end,IsSpellKnown=function() return true end}
+C_Spell={GetSpellInfo=function() return {name="Hunter's Mark",minRange=0,maxRange=100} end}
+local marked=false
+C_UnitAuras={GetAuraDataByIndex=function(_,i) if marked and i==1 then return {name="Hunter's Mark"} end end}
+f.scripts.OnEvent(f,'SPELLS_CHANGED')
+check(f.labels[4].shown and not f.labels[2].shown,'missing learned mark shows compact warning')
+marked=true;f.scripts.OnEvent(f,'UNIT_AURA','target')
+check(not f.labels[4].shown,'applying mark immediately clears warning')
+marked=false;f.scripts.OnEvent(f,'UNIT_AURA','target')
+check(f.labels[4].shown,'expired mark restores reminder')
+UnitExists=function() return false end;f.Refresh()
+check(not f.labels[4].shown,'target loss clears mark reminder')
+db.enabled=false;f.Refresh();check(not f.events.UNIT_AURA,'disable removes aura listener')
 print('PASS: '..count..' distance checks')

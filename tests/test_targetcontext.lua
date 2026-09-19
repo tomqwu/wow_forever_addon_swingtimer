@@ -85,4 +85,21 @@ check(not C.PetNeedsMend('targettarget'),'zero maximum guarded')
 UnitHealthMax=function() return 100 end
 UnitIsUnit=function() return secret end
 check(not C.PetNeedsMend('targettarget'),'restricted identity guarded')
+UnitCanAttack=function() return true end
+UnitIsDead=function() return false end
+local auras={}
+C_UnitAuras={GetAuraDataByIndex=function(_,i,filter) assert(filter=='HARMFUL');return auras[i] end}
+check(C.MarkMissing("Hunter's Mark"),'readable empty aura list means missing')
+auras={{name="Hunter's Mark",sourceUnit='party1'}}
+check(C.MarkMissing("Hunter's Mark")==false,'another hunters mark also counts')
+auras={{name='Other debuff'}};check(C.MarkMissing("Hunter's Mark"),'unrelated debuff')
+auras={{name=secret}};check(C.MarkMissing("Hunter's Mark")==nil,'restricted aura does not invent missing')
+check(C.MarkMissing(nil)==nil,'unlearned mark does not warn')
+UnitCanAttack=function() return false end;check(C.MarkMissing("Hunter's Mark")==false,'friendly target never warns')
+UnitCanAttack=function() return true end;UnitIsDead=function() return true end
+check(C.MarkMissing("Hunter's Mark")==false,'dead target never warns')
+UnitIsDead=function() return false end
+C_UnitAuras.GetAuraDataByIndex=function() error('restricted') end
+check(C.MarkMissing("Hunter's Mark")==nil,'aura API failure quiet')
+C_UnitAuras=nil;check(C.MarkMissing("Hunter's Mark")==nil,'missing aura API quiet')
 print('PASS: '..count..' target context checks')

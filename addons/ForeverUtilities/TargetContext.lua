@@ -77,3 +77,21 @@ function Context.PetNeedsMend(unit)
     return Core.IsNumber(health) and Core.IsNumber(maximum)
         and maximum>0 and health>0 and health/maximum<=0.30
 end
+
+-- A missing result is only trustworthy after a fully readable harmful-aura scan.
+function Context.MarkMissing(name)
+    if not Core.IsReadable(name) or type(name)~='string' or name=='' then return nil end
+    if Call(UnitCanAttack,'player','target')~=true or Call(UnitIsDead,'target')~=false then return false end
+    local api=C_UnitAuras and C_UnitAuras.GetAuraDataByIndex
+    if type(api)~='function' then return nil end
+    local unknown=false
+    for index=1,255 do
+        local ok,aura=pcall(api,'target',index,'HARMFUL')
+        if not ok or not Core.IsReadable(aura) then return nil end
+        if aura==nil then if unknown then return nil end;return true end
+        if type(aura)~='table' then return nil end
+        if not Core.IsReadable(aura.name) or type(aura.name)~='string' then unknown=true
+        elseif aura.name==name then return false end
+    end
+    return nil
+end

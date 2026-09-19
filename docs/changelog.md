@@ -1,3 +1,13 @@
+## 0.10.0
+
+- Added an orange “Hunter's Mark!” reminder for unmarked living enemy targets.
+- Learns the spell from your spellbook instead of assuming a Classic spell ID.
+- Any hunter’s mark clears the reminder; aura changes update it immediately.
+- Stays quiet for friendly/dead targets, unlearned spells, and unavailable or restricted aura readings.
+- Uses the secondary angle area while missing, keeping the compact bar and ammo readable.
+
+Use `/reload` to apply the update.
+
 ## 0.9.0
 
 - Highlights the target-of-target portrait with a red border when it shows your own pet at 30% health or below.
