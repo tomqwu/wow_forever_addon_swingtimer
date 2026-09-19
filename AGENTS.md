@@ -46,8 +46,7 @@ root and packaged README aligned. Add exact-version highlights to docs/changelog
 for every addon release. release_notes.py combines them for the GitHub release;
 the CurseForge uploader uses that body as its file changelog. Project-page edits
 are separate: do not claim the website description changed merely because an
-upload succeeded. With no target the indicator uses 20% opacity; selecting a
-target or unlocking restores full visibility without idle polling.
+upload succeeded. With no target the indicator uses 20% opacity; combat restores full visibility, an out-of-combat target uses 60%, and idle uses 20%. Unlocking does not override fading.
 
 Numeric distance uses UnitDistanceSquared only when checkedDistance is readable
 and true and the squared value is finite/nonnegative. Never fabricate a midpoint
@@ -62,3 +61,7 @@ ForeverUtilitiesDB.hunter is migrated once from modules.distance or legacy flat
 settings. Keep the installation folder, saved-variable name, and release prefix
 for compatibility. No runtime Modules registry remains. Non-hunters must not
 create the bar. Ammo sits below the white range text; keep the 400 × 56 layout.
+
+## Bar layout
+
+Layout.lua owns visual block allocation inside the fixed 400 × 56 bar. Keep range/ammo, combat reminders, pet portrait, and control separate. Blocks do not shift with transient warning state; only feature preferences redistribute width. See docs/bar-layout.md before adding information.

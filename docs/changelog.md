@@ -1,3 +1,13 @@
+## 0.13.0
+
+- Organized the unchanged 400 × 56 bar into range/ammo, combat reminders, pet, and lock blocks with subtle dividers.
+- Mark icon sits above the angle in the combat block; pet health stays attached to its portrait.
+- Blocks remain stable when warnings appear or disappear, avoiding text/portrait movement during combat.
+- Disabling a block returns its space to the range block. Long range text scales within its own slot instead of overlapping ammo or icons.
+- Existing feature toggles, position, scale, and fading are preserved.
+
+Use `/reload` to apply the layout.
+
 ## 0.12.1
 
 - Settings window is draggable by default using its title or background, without unlocking the hunter bar.

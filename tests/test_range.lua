@@ -4,6 +4,7 @@ issecretvalue=function(v) return rawequal(v,secret) end
 assert(loadfile('addons/ForeverUtilities/Core.lua'))('ForeverUtilities',NS)
 assert(loadfile('addons/ForeverUtilities/Range.lua'))('ForeverUtilities',NS)
 assert(loadfile('addons/ForeverUtilities/TargetContext.lua'))('ForeverUtilities',NS)
+assert(loadfile('addons/ForeverUtilities/Layout.lua'))('ForeverUtilities',NS)
 local count=0
 local function check(ok,msg) assert(ok,msg);count=count+1 end
 local function measure(probes,m,r,state,text)
@@ -178,7 +179,7 @@ UnitPosition=function(unit) if unit=='player' then return 0,0,0,1 end return 0,1
 local portraits=0
 SetPortraitTexture=function(texture,unit) portraits=portraits+1;texture.unit=unit end
 target=true;dead=false;f.Refresh()
-local portrait=f.textures[#f.textures]
+local portrait=f.portrait
 check(portrait.unit=='targettarget' and portrait.shown,'right icon uses targettarget portrait')
 check(f.labels[2].text=='+90°','angle has no wording')
 local before=portraits;f.scripts.OnEvent(f,'UNIT_TARGET','target')
@@ -238,7 +239,7 @@ local petHealth=30
 UnitHealth=function() return petHealth end
 UnitHealthMax=function() return 100 end
 f.Refresh()
-local glow=f.textures[#f.textures-1]
+local glow=f.petHighlight
 check(glow.shown,'low pet portrait highlighted')
 petHealth=31;f.scripts.OnEvent(f,'UNIT_HEALTH','pet')
 check(not glow.shown,'healing removes highlight immediately')

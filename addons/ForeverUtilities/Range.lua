@@ -110,6 +110,7 @@ function Range.Create(host, db)
     local portrait=frame:CreateTexture(nil,'ARTWORK',nil,1)
     portrait:SetSize(38,38);portrait:SetPoint('RIGHT',frame,'RIGHT',-24,0)
     portrait:Hide()
+    frame.portrait=portrait;frame.petHighlight=petHighlight
     local angleLabel=frame:CreateFontString(nil,'OVERLAY','GameFontHighlight')
     angleLabel:SetFont(STANDARD_TEXT_FONT or 'Fonts\\FRIZQT__.TTF',12,'OUTLINE')
     angleLabel:SetJustifyH('LEFT');angleLabel:SetWordWrap(false)
@@ -138,28 +139,50 @@ function Range.Create(host, db)
             end
         end
     end
+    local separators={}
+    for _,key in ipairs({'combat','pet','control'}) do
+        local line=frame:CreateTexture(nil,'ARTWORK',nil,0)
+        line:SetSize(1,36);line:SetColorTexture(0.65,0.75,0.8,0.18)
+        separators[key]=line
+    end
+    local layout
     local function ContextLayout()
-        frame:SetHeight(NS.TargetContext.Height(db))
+        layout=NS.Layout.Compute(db)
+        frame:SetSize(layout.width,layout.height)
         label:SetShown(db.showRange~=false);icon:SetShown(db.showRange~=false)
         iconBorder:SetShown(db.showRange~=false);accent:SetShown(db.showRange~=false)
+        label:ClearAllPoints();label:SetPoint('TOPLEFT',frame,'TOPLEFT',layout.text.x,-6)
+        label:SetSize(layout.text.width,26)
+        ammoLabel:ClearAllPoints();ammoLabel:SetPoint('TOPLEFT',frame,'TOPLEFT',layout.text.x,-33)
+        ammoLabel:SetWidth(layout.text.width)
+        for key,line in pairs(separators) do
+            local block=layout[key]
+            line:SetShown(block~=nil)
+            if block then line:ClearAllPoints();line:SetPoint('TOPLEFT',frame,'TOPLEFT',block.x,-10) end
+        end
+        if layout.combat then
+            local x=layout.combat.x
+            markBorder:ClearAllPoints();markBorder:SetPoint('TOPLEFT',frame,'TOPLEFT',x+16,-5)
+            angleLabel:ClearAllPoints();angleLabel:SetPoint('TOPLEFT',frame,'TOPLEFT',x+3,-34)
+            angleLabel:SetWidth(50);angleLabel:SetJustifyH('CENTER')
+        end
         angleLabel:SetShown(db.showAngle~=false)
-        local width=db.showTargetTarget~=false and 270 or 322
-        label:SetWidth(width);angleLabel:SetWidth(110)
-        ammoLabel:ClearAllPoints();ammoLabel:SetPoint('TOPLEFT',frame,'TOPLEFT',66,-33)
-        label:SetHeight(32)
-        if db.showTargetTarget==false then portrait:Hide() end
+        if layout.pet then
+            portrait:ClearAllPoints();portrait:SetPoint('TOPLEFT',frame,'TOPLEFT',layout.pet.x+5,-9)
+            petHighlight:ClearAllPoints();petHighlight:SetPoint('TOPLEFT',frame,'TOPLEFT',layout.pet.x+2,-6)
+        else portrait:Hide();petHighlight:Hide() end
     end
     local function ClearContext()
-        markIcon:Hide();markBorder:Hide();petHighlight:Hide();portrait:Hide();portrait:SetTexture(nil);angleLabel:SetText('');label:SetWidth(322)
+        markIcon:Hide();markBorder:Hide();petHighlight:Hide();portrait:Hide();portrait:SetTexture(nil);angleLabel:SetText('')
     end
     local function UpdateContext()
         -- Clear first: an absent/restricted new unit must never retain the old portrait.
-        petHighlight:Hide();portrait:Hide();portrait:SetTexture(nil);label:SetWidth(322)
+        petHighlight:Hide();portrait:Hide();portrait:SetTexture(nil)
         if db.showTargetTarget~=false and Call(UnitExists,'targettarget')==true
             and type(SetPortraitTexture)=='function' then
             local ok=pcall(SetPortraitTexture,portrait,'targettarget')
             if ok then
-                portrait:Show();label:SetWidth(270)
+                portrait:Show()
                 petHighlight:SetShown(db.petMendWarning~=false and NS.TargetContext.PetNeedsMend('targettarget'))
             end
         end
@@ -218,6 +241,12 @@ function Range.Create(host, db)
         accent:SetColorTexture(c[1],c[2],c[3],1)
         label:SetTextColor(1,1,1,1)
         label:SetText(text)
+        -- Keep long range estimates inside their block without wrapping over ammo.
+        for size=16,12,-1 do
+            label:SetFont(STANDARD_TEXT_FONT or 'Fonts\\FRIZQT__.TTF',size,'OUTLINE')
+            local width=label:GetStringWidth()
+            if not Core.IsNumber(width) or width<=layout.text.width then break end
+        end
     end
     local function SpellRange(p)
         local value=Call(C_SpellBook and C_SpellBook.IsSpellBookItemInRange,

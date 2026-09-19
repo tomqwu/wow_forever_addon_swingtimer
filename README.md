@@ -13,6 +13,7 @@ you need at a glance without a toolbox or module selector.
 - **Hunter's Mark reminder:** a highlighted spell icon appears when your living enemy target has no readable Hunter's Mark debuff and you have learned the spell. It clears when marked, including by another hunter. Unavailable aura data stays quiet.
 - **Mend Pet reminder:** the right-hand portrait gets a red border when it shows your own living pet at 30% health or below. The border clears when healed or the target changes. This is a visual reminder, not an automatic cast.
 - **Optional facing angle:** signed degrees relative to your character: positive left, negative right, zero ahead. Hidden when valid position data is unavailable.
+- **Organized blocks:** range and ammo on the left, Mark and angle in a small combat block, pet portrait next, and a lock control at the edge. Subtle dividers keep information distinct. Disabled blocks return space to the range text.
 - **Compact and movable:** the bar stays 400 × 56, with adjustable scale and position.
 - **Quiet while idle:** full opacity in combat, 60% with a target outside combat, and 20% without a target. Unlocking only enables dragging and keeps these visibility rules; disabled means no bar updates or event listeners.
 

@@ -33,7 +33,7 @@ NS.Hunter = {
         host.hint:SetPoint('BOTTOM',host,'TOP',0,4)
         local indicator=NS.Range.Create(host,db)
         local lock=CreateFrame('Button','ForeverHunterFriendLock',indicator)
-        lock:SetSize(18,24);lock:SetPoint('RIGHT',host,'RIGHT',-1,0)
+        lock:SetSize(18,24);lock:SetPoint('RIGHT',host,'RIGHT',-7,0)
         lock:EnableMouse(true)
         local function Block(width,height,x,y)
             local texture=lock:CreateTexture(nil,'OVERLAY')
