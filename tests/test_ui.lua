@@ -78,6 +78,22 @@ check(mini and mini.shown,'minimap button available even when bar disabled')
 check(mini.width==28 and mini.height==28,'compact minimap button')
 check(math.abs(math.sqrt(mini.x^2+mini.y^2)-103)<0.01,'button sits on minimap rim')
 mini.scripts.OnClick();check(panel.shown,'minimap opens settings')
+local cursorX,cursorY=60,280
+GetCursorPosition=function() return cursorX,cursorY end
+Minimap.GetEffectiveScale=function() return 2 end
+panel:Hide();mini.scripts.OnMouseDown();mini.scripts.OnDragStart(mini)
+check(math.abs(db.minimapAngle-90)<0.01,'drag uses minimap scale and cursor direction')
+check(math.abs(mini.x)<0.01 and math.abs(mini.y-103)<0.01,'drag stays on rim')
+cursorX=-140;cursorY=80;mini.scripts.OnUpdate()
+check(math.abs(db.minimapAngle-180)<0.01,'drag follows cursor around rim')
+mini.scripts.OnDragStop(mini);mini.scripts.OnClick()
+check(not panel.shown and not mini.scripts.OnUpdate,'drag release neither opens panel nor keeps polling')
+mini.scripts.OnMouseDown();mini.scripts.OnClick();check(panel.shown,'next normal click opens settings')
+NS.Hunter.Initialize(ForeverUtilitiesDB)
+check(db.minimapAngle==180 and mini.x<0,'saved minimap angle survives settings initialization')
+mini.scripts.OnDragStart(mini);mini.scripts.OnHide(mini)
+check(not mini.scripts.OnUpdate,'hiding stops cursor tracking')
+Minimap.GetEffectiveScale=function() return 1 end
 local lock=named.ForeverHunterFriendLock
 local wasLocked=db.locked;lock.scripts.OnClick()
 check(db.locked~=wasLocked and panel.controls.locked.checked==db.locked,'bar lock toggles and syncs settings')

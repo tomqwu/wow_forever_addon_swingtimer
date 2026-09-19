@@ -71,7 +71,7 @@ local function OpenPanel()
     end
     panel:Show();RefreshPanel()
 end
-local minimapButton
+local minimapButton,positionMinimap
 local function RefreshMinimap()
     if not Hunter.IsHunter() or not Minimap then return end
     if not minimapButton then
@@ -81,11 +81,37 @@ local function RefreshMinimap()
             local width,height=Minimap:GetWidth(),Minimap:GetHeight()
             if not NS.Core.IsNumber(width) or width<=0 then width=140 end
             if not NS.Core.IsNumber(height) or height<=0 then height=140 end
-            local angle=math.rad(35)
+            local angle=math.rad(Hunter.db.minimapAngle)
             minimapButton:ClearAllPoints()
             minimapButton:SetPoint('CENTER',Minimap,'CENTER',math.cos(angle)*(width/2+3),math.sin(angle)*(height/2+3))
         end
+        positionMinimap=Position
         Position();Minimap:HookScript('OnSizeChanged',Position)
+        minimapButton:RegisterForDrag('LeftButton')
+        local dragged=false
+        local function FollowCursor()
+            local x,y=GetCursorPosition()
+            local cx,cy=Minimap:GetCenter()
+            local scale=Minimap:GetEffectiveScale()
+            if not NS.Core.IsNumber(x) or not NS.Core.IsNumber(y)
+                or not NS.Core.IsNumber(cx) or not NS.Core.IsNumber(cy)
+                or not NS.Core.IsNumber(scale) or scale<=0 then return end
+            local dx,dy=x/scale-cx,y/scale-cy
+            if dx==0 and dy==0 then return end
+            Hunter.db.minimapAngle=math.deg(math.atan2(dy,dx))%360
+            Position()
+        end
+        minimapButton:SetScript('OnMouseDown',function() dragged=false end)
+        minimapButton:SetScript('OnDragStart',function(self)
+            dragged=true
+            if GameTooltip then GameTooltip:Hide() end
+            self:SetScript('OnUpdate',FollowCursor);FollowCursor()
+        end)
+        minimapButton:SetScript('OnDragStop',function(self)
+            self:SetScript('OnUpdate',nil)
+        end)
+        minimapButton:SetScript('OnHide',function(self) self:SetScript('OnUpdate',nil) end)
+        minimapButton:SetScript('OnClick',function() if not dragged then OpenPanel() end end)
         minimapButton:SetFrameStrata('MEDIUM');minimapButton:SetFrameLevel(8)
         local function Circle(size,layer)
             local texture=minimapButton:CreateTexture(nil,layer)
@@ -101,15 +127,15 @@ local function RefreshMinimap()
         local icon=Circle(19,'OVERLAY')
         icon:SetTexture('Interface\\Icons\\Ability_Marksmanship');icon:SetTexCoord(0.08,0.92,0.08,0.92)
         local highlight=Circle(24,'HIGHLIGHT');highlight:SetColorTexture(1,0.85,0.4,0.22)
-        minimapButton:SetScript('OnClick',OpenPanel)
         minimapButton:SetScript('OnEnter',function(self)
             if GameTooltip then
                 GameTooltip:SetOwner(self,'ANCHOR_LEFT');GameTooltip:SetText("Hunter's Friend")
-                GameTooltip:AddLine('Click to open settings.',1,1,1);GameTooltip:Show()
+                GameTooltip:AddLine('Click: settings | Drag: move around minimap',1,1,1);GameTooltip:Show()
             end
         end)
         minimapButton:SetScript('OnLeave',function() if GameTooltip then GameTooltip:Hide() end end)
     end
+    positionMinimap()
     minimapButton:SetShown(Hunter.db.showMinimap~=false)
 end
 Hunter.changed=function() RefreshPanel();RefreshMinimap() end
@@ -138,7 +164,7 @@ SlashCmdList.FOREVERUTILITIES=function(message)
         db.scale=value;Hunter.Apply()
     elseif command=='reset' then Hunter.Reset()
     elseif command=='status' then
-        Say('v0.13.1 | '..(db.enabled and 'Enabled' or 'Disabled'))
+        Say('v0.13.2 | '..(db.enabled and 'Enabled' or 'Disabled'))
         if db.enabled and Hunter.instance then Say(Hunter.instance.Status()) end
     else Say('/fhunter: unlock | lock | on | off | scale 0.5..2 | reset | status') end
 end

@@ -38,7 +38,8 @@ The folder name is retained for seamless upgrades; the addon appears in WoW as
 **Forever - Hunter's Friend**. Restart for first installation, or use `/reload`
 for updates. The bar runs only on hunter characters.
 
-Click the button at the upper-right of the minimap or use `/fhunter` to open settings.
+Click the round minimap button or use `/fhunter` to open settings. Left-drag
+the icon around the minimap edge; its position is saved between sessions.
 The small padlock at the right edge of the bar toggles dragging; unlocked is green.
 Both buttons have visibility switches in settings. Locking never changes fading or live updates.
 

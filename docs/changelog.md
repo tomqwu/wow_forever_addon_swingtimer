@@ -1,3 +1,11 @@
+## 0.13.2
+
+- Left-drag the minimap icon around the minimap edge; its angle is saved between sessions.
+- Respects minimap scale, and stops cursor tracking when released or hidden.
+- Releasing a drag does not open settings; a normal click still does.
+
+Use `/reload`, then drag the round icon to your preferred position.
+
 ## 0.13.1
 
 - Replaced the square minimap spell button with a small round, gold-rimmed icon.

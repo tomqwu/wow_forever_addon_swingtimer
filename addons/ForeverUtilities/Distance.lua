@@ -1,8 +1,9 @@
 local _, NS = ...
 local function Normalize(db)
-    for key,default in pairs({x=0,y=-210,scale=1}) do
+    for key,default in pairs({x=0,y=-210,scale=1,minimapAngle=35}) do
         if not NS.Core.IsNumber(db[key]) then db[key]=default end
     end
+    db.minimapAngle=db.minimapAngle%360
     db.x=math.max(-5000,math.min(5000,db.x))
     db.y=math.max(-5000,math.min(5000,db.y))
     db.scale=math.max(0.5,math.min(2,db.scale))
@@ -10,7 +11,7 @@ end
 NS.Hunter = {
     name="Forever - Hunter's Friend",
     description='Hunter range, ammunition, and target awareness.',
-    defaults={enabled=true,locked=true,x=0,y=-210,scale=1,showTargetTarget=true,showAngle=true,showRange=true,showAmmo=true,lowAmmoWarning=true,petMendWarning=true,markWarning=true,fadeOutOfCombat=true,showMinimap=true,showLockButton=true}, normalize=Normalize,
+    defaults={enabled=true,locked=true,x=0,y=-210,scale=1,showTargetTarget=true,showAngle=true,showRange=true,showAmmo=true,lowAmmoWarning=true,petMendWarning=true,markWarning=true,fadeOutOfCombat=true,showMinimap=true,showLockButton=true,minimapAngle=35}, normalize=Normalize,
     options={
         {key='showMinimap',label='Show minimap settings button',kind='toggle'},
         {key='showLockButton',label='Show lock button on bar',kind='toggle'},
