@@ -48,5 +48,5 @@ UnitName=function() return secret end
 check(C.TargetTarget()=='Target of target: Unavailable','restricted name')
 UnitName=function() error('unavailable') end
 check(C.TargetTarget()=='Target of target: Unavailable','failed name API')
-check(C.Height({})==100 and C.Height({showAngle=false})==78 and C.Height({showAngle=false,showTargetTarget=false})==56,'adaptive height')
+check(C.Height({})==56 and C.Height({showAngle=false})==56 and C.Height({showAngle=false,showTargetTarget=false})==56,'original height with any context options')
 print('PASS: '..count..' target context checks')

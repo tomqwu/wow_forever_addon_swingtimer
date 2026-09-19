@@ -84,39 +84,40 @@ function Range.Create(host, db)
     accent:SetPoint('BOTTOMLEFT',frame,'BOTTOMLEFT',0,0)
     accent:SetWidth(4)
     local iconBorder = frame:CreateTexture(nil,'ARTWORK',nil,0)
-    iconBorder:SetSize(44,44); iconBorder:SetPoint('TOPLEFT',frame,'TOPLEFT',10,-10)
+    iconBorder:SetSize(44,44); iconBorder:SetPoint('TOPLEFT',frame,'TOPLEFT',10,-6)
     local icon = frame:CreateTexture(nil,'ARTWORK',nil,1)
     icon:SetSize(38,38); icon:SetPoint('CENTER',iconBorder,'CENTER',0,0)
     icon:SetTexture('Interface\\Icons\\Ability_Marksmanship')
     local label = frame:CreateFontString(nil,'OVERLAY','GameFontNormalLarge')
-    label:SetFont(STANDARD_TEXT_FONT or 'Fonts\\FRIZQT__.TTF',18,'OUTLINE')
+    label:SetFont(STANDARD_TEXT_FONT or 'Fonts\\FRIZQT__.TTF',16,'OUTLINE')
     label:SetShadowColor(0,0,0,1)
     label:SetShadowOffset(1,-1)
-    label:SetPoint('TOPLEFT',frame,'TOPLEFT',66,-10)
-    label:SetPoint('TOPRIGHT',frame,'TOPRIGHT',-12,-10)
-    label:SetHeight(36)
+    label:SetPoint('TOPLEFT',frame,'TOPLEFT',66,-6)
+    label:SetHeight(44)
     label:SetJustifyH('LEFT')
-    label:SetWordWrap(false)
+    label:SetWordWrap(true)
     local targetLabel=frame:CreateFontString(nil,'OVERLAY','GameFontHighlight')
     local angleLabel=frame:CreateFontString(nil,'OVERLAY','GameFontHighlight')
     for _,text in ipairs({targetLabel,angleLabel}) do
-        text:SetFont(STANDARD_TEXT_FONT or 'Fonts\\FRIZQT__.TTF',14,'OUTLINE')
-        text:SetJustifyH('LEFT');text:SetWordWrap(false);text:SetWidth(322)
+        text:SetFont(STANDARD_TEXT_FONT or 'Fonts\\FRIZQT__.TTF',12,'OUTLINE')
+        text:SetJustifyH('LEFT');text:SetWordWrap(false);text:SetWidth(146)
         text:SetTextColor(0.9,0.93,1)
     end
     local function ContextLayout()
         frame:SetHeight(NS.TargetContext.Height(db))
         targetLabel:SetShown(db.showTargetTarget~=false)
         angleLabel:SetShown(db.showAngle~=false)
-        targetLabel:ClearAllPoints();targetLabel:SetPoint('TOPLEFT',frame,'TOPLEFT',66,-55)
-        angleLabel:ClearAllPoints();angleLabel:SetPoint('TOPLEFT',frame,'TOPLEFT',66,db.showTargetTarget~=false and -77 or -55)
+        local hasContext=db.showTargetTarget~=false or db.showAngle~=false
+        label:SetWidth(hasContext and 172 or 322)
+        targetLabel:ClearAllPoints();targetLabel:SetPoint('TOPLEFT',frame,'TOPLEFT',244,db.showAngle~=false and -11 or -21)
+        angleLabel:ClearAllPoints();angleLabel:SetPoint('TOPLEFT',frame,'TOPLEFT',244,db.showTargetTarget~=false and -32 or -21)
     end
     local function ClearContext()
-        targetLabel:SetText('Target of target: —');angleLabel:SetText('Angle: —')
+        targetLabel:SetText('ToT: —');angleLabel:SetText('Angle: —')
     end
     local function UpdateContext()
-        if db.showTargetTarget~=false then targetLabel:SetText(NS.TargetContext.TargetTarget()) end
-        if db.showAngle~=false then angleLabel:SetText(NS.TargetContext.AngleText()) end
+        if db.showTargetTarget~=false then targetLabel:SetText((NS.TargetContext.TargetTarget():gsub('^Target of target:', 'ToT:'))) end
+        if db.showAngle~=false then angleLabel:SetText((NS.TargetContext.AngleText():gsub(' %(straight ahead%)',' ahead'):gsub(' %(behind%)',' behind'))) end
     end
     local spells, shot, elapsed = {}, nil, 0
     local function Discover()

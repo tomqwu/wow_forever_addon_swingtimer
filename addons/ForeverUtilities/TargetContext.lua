@@ -47,5 +47,5 @@ function Context.AngleText()
     return string.format('Angle: %d° %s',degrees,angle>0 and 'left' or 'right')
 end
 function Context.Height(db)
-    return 56+(db.showTargetTarget~=false and 22 or 0)+(db.showAngle~=false and 22 or 0)
+    return 56
 end

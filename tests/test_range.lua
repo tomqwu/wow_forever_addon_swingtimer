@@ -168,15 +168,15 @@ UnitExists=function(unit) return target end
 GetPlayerFacing=function() return 0 end
 UnitPosition=function(unit) if unit=='player' then return 0,0,0,1 end return 0,10,0,1 end
 target=true;dead=false;f.Refresh()
-check(f.labels[2].text=='Target of target: Tank' and f.labels[3].text=='Angle: 90° left','context shown alongside range')
+check(f.labels[2].text=='ToT: Tank' and f.labels[3].text=='Angle: 90° left','context shown alongside range')
 targetName='Healer';f.scripts.OnEvent(f,'UNIT_TARGET','target')
-check(f.labels[2].text=='Target of target: Healer','targettarget change updates immediately')
+check(f.labels[2].text=='ToT: Healer','targettarget change updates immediately')
 targetName='Renamed';f.scripts.OnEvent(f,'UNIT_NAME_UPDATE','targettarget')
-check(f.labels[2].text=='Target of target: Renamed','targettarget name updates')
+check(f.labels[2].text=='ToT: Renamed','targettarget name updates')
 UnitPosition=nil;f.scripts.OnUpdate(f,0.15)
 check(f.labels[3].text=='Angle unavailable','restricted positions clear old angle')
 target=false;f.scripts.OnEvent(f,'PLAYER_TARGET_CHANGED')
-check(f.labels[2].text=='Target of target: —' and f.labels[3].text=='Angle: —','target loss clears context')
+check(f.labels[2].text=='ToT: —' and f.labels[3].text=='Angle: —','target loss clears context')
 local queries=0
 UnitName=function() queries=queries+1;return 'Tank' end
 GetPlayerFacing=function() queries=queries+1;return 0 end

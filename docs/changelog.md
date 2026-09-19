@@ -1,3 +1,12 @@
+## 0.5.1
+
+- Restored the original 400 × 56 distance bar footprint.
+- Moved target-of-target (ToT) and angle into two compact lines on the right instead of adding rows below.
+- Distance text uses the left column; disabling both context lines gives it the full available width.
+- Preserves your position, scale, and feature settings.
+
+Use `/reload` to apply the compact layout.
+
 ## 0.5.0
 
 - Distance Checker now shows your target’s current target, with YOU when it targets you.
