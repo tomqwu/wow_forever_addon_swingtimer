@@ -33,7 +33,7 @@ end
 local function OpenPanel()
     if not panel then
         panel=CreateFrame('Frame','ForeverHunterFriendOptions',UIParent)
-        panel:SetSize(420,360);panel:SetPoint('CENTER');panel:SetFrameStrata('DIALOG')
+        panel:SetSize(420,180+#Hunter.options*42);panel:SetPoint('CENTER');panel:SetFrameStrata('DIALOG')
         panel:SetClampedToScreen(true);panel:EnableMouse(true)
         local bg=panel:CreateTexture(nil,'BACKGROUND');bg:SetAllPoints();bg:SetColorTexture(0.025,0.03,0.045,0.98)
         Text(panel,"Forever - Hunter's Friend",20,-18,'GameFontNormalLarge')
@@ -59,8 +59,8 @@ local function OpenPanel()
             end
             y=y-42
         end
-        Button(panel,'Reset settings',20,-304,150,function() Hunter.Reset() end)
-        Button(panel,'Close',320,-304,80,function() panel:Hide() end)
+        Button(panel,'Reset settings',20,y-10,150,function() Hunter.Reset() end)
+        Button(panel,'Close',320,y-10,80,function() panel:Hide() end)
         if UISpecialFrames then table.insert(UISpecialFrames,'ForeverHunterFriendOptions') end
     end
     panel:Show();RefreshPanel()
@@ -91,7 +91,7 @@ SlashCmdList.FOREVERUTILITIES=function(message)
         db.scale=value;Hunter.Apply()
     elseif command=='reset' then Hunter.Reset()
     elseif command=='status' then
-        Say('v0.10.0 | '..(db.enabled and 'Enabled' or 'Disabled'))
+        Say('v0.11.0 | '..(db.enabled and 'Enabled' or 'Disabled'))
         if db.enabled and Hunter.instance then Say(Hunter.instance.Status()) end
     else Say('/fhunter: unlock | lock | on | off | scale 0.5..2 | reset | status') end
 end

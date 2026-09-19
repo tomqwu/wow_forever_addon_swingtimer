@@ -96,6 +96,14 @@ function Range.Create(host, db)
     label:SetHeight(44)
     label:SetJustifyH('LEFT')
     label:SetWordWrap(false)
+    local markName
+    local markBorder=frame:CreateTexture(nil,'ARTWORK',nil,0)
+    markBorder:SetSize(24,24);markBorder:SetPoint('TOPLEFT',frame,'TOPLEFT',310,-27)
+    markBorder:SetColorTexture(1,0.65,0.1,1);markBorder:Hide()
+    local markIcon=frame:CreateTexture(nil,'ARTWORK',nil,1)
+    markIcon:SetSize(20,20);markIcon:SetPoint('CENTER',markBorder,'CENTER',0,0)
+    markIcon:SetTexture('Interface\\Icons\\Ability_Hunter_SniperShot');markIcon:Hide()
+    frame.markIcon=markIcon
     local petHighlight=frame:CreateTexture(nil,'ARTWORK',nil,0)
     petHighlight:SetSize(44,44);petHighlight:SetPoint('RIGHT',frame,'RIGHT',-9,0)
     petHighlight:SetColorTexture(1,0.1,0.1,1);petHighlight:Hide()
@@ -112,9 +120,11 @@ function Range.Create(host, db)
     ammoLabel:SetJustifyH('LEFT');ammoLabel:SetWordWrap(false);ammoLabel:SetSize(110,14)
     local warnedLowAmmo=false
     local function UpdateAmmo()
+        ammoLabel:SetShown(db.showAmmo~=false)
+        if db.showAmmo==false and db.lowAmmoWarning==false then ammoLabel:SetText('');return end
         local count=NS.TargetContext.AmmoCount()
         ammoLabel:SetText(count and ('Ammo: '..count) or '')
-        local low=count~=nil and count<=200
+        local low=db.lowAmmoWarning~=false and count~=nil and count<=200
         if low then ammoLabel:SetTextColor(1,0.25,0.2)
         else ammoLabel:SetTextColor(0.9,0.93,1) end
         if count and count>200 then warnedLowAmmo=false end
@@ -128,23 +138,19 @@ function Range.Create(host, db)
             end
         end
     end
-    local markName
-    local markLabel=frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall')
-    markLabel:SetFont(STANDARD_TEXT_FONT or 'Fonts\\FRIZQT__.TTF',12,'OUTLINE')
-    markLabel:SetPoint('TOPLEFT',frame,'TOPLEFT',190,-33);markLabel:SetSize(145,14)
-    markLabel:SetJustifyH('LEFT');markLabel:SetTextColor(1,0.35,0.15)
-    markLabel:SetText("Hunter's Mark!");markLabel:Hide()
     local function ContextLayout()
         frame:SetHeight(NS.TargetContext.Height(db))
+        label:SetShown(db.showRange~=false);icon:SetShown(db.showRange~=false)
+        iconBorder:SetShown(db.showRange~=false);accent:SetShown(db.showRange~=false)
         angleLabel:SetShown(db.showAngle~=false)
         local width=db.showTargetTarget~=false and 270 or 322
-        label:SetWidth(width);angleLabel:SetWidth(width-124)
+        label:SetWidth(width);angleLabel:SetWidth(110)
         ammoLabel:ClearAllPoints();ammoLabel:SetPoint('TOPLEFT',frame,'TOPLEFT',66,-33)
         label:SetHeight(32)
         if db.showTargetTarget==false then portrait:Hide() end
     end
     local function ClearContext()
-        markLabel:Hide();petHighlight:Hide();portrait:Hide();portrait:SetTexture(nil);angleLabel:SetText('');label:SetWidth(322)
+        markIcon:Hide();markBorder:Hide();petHighlight:Hide();portrait:Hide();portrait:SetTexture(nil);angleLabel:SetText('');label:SetWidth(322)
     end
     local function UpdateContext()
         -- Clear first: an absent/restricted new unit must never retain the old portrait.
@@ -154,12 +160,12 @@ function Range.Create(host, db)
             local ok=pcall(SetPortraitTexture,portrait,'targettarget')
             if ok then
                 portrait:Show();label:SetWidth(270)
-                petHighlight:SetShown(NS.TargetContext.PetNeedsMend('targettarget'))
+                petHighlight:SetShown(db.petMendWarning~=false and NS.TargetContext.PetNeedsMend('targettarget'))
             end
         end
-        local missing=NS.TargetContext.MarkMissing(markName)==true
-        markLabel:SetShown(missing)
-        angleLabel:SetShown(db.showAngle~=false and not missing)
+        local missing=db.markWarning~=false and NS.TargetContext.MarkMissing(markName)==true
+        markIcon:SetShown(missing);markBorder:SetShown(missing)
+        angleLabel:SetShown(db.showAngle~=false)
         if db.showAngle~=false then
             local angle=NS.TargetContext.ReadAngle()
             angleLabel:SetText(Core.IsNumber(angle) and string.format('%+.0f°',angle) or '')
@@ -188,6 +194,7 @@ function Range.Create(host, db)
                         local data=Call(C_Spell.GetSpellInfo,id)
                         if type(data)=='table' and Core.IsReadable(data.name) and wanted and data.name==wanted then
                             markName=data.name
+                            if Core.IsNumber(data.iconID) then markIcon:SetTexture(data.iconID) end
                         end
                         if type(data)=='table' and Core.IsNumber(data.minRange) and Core.IsNumber(data.maxRange)
                             and data.minRange>=0 and data.maxRange>data.minRange then
@@ -221,6 +228,7 @@ function Range.Create(host, db)
     local lastStatus='Not checked'
     local function Update()
         UpdateContext()
+        if db.showRange==false then lastStatus='Range display disabled';return end
         local yards=Range.ReadDistance('target')
         if Call(UnitCanAttack,'player','target')~=true then
             local state,text=Range.WithDistance('unknown','Range unavailable',yards)
@@ -268,7 +276,7 @@ function Range.Create(host, db)
         UpdateAmmo()
         local hasTarget=Call(UnitExists,'target')==true
         local inCombat=Call(UnitAffectingCombat,'player')==true
-        frame:SetAlpha(inCombat and 1 or (hasTarget and 0.6 or 0.2))
+        frame:SetAlpha((db.fadeOutOfCombat==false or inCombat) and 1 or (hasTarget and 0.6 or 0.2))
         if not hasTarget then ClearContext(); Paint('unknown','No target'); return end
         if Call(UnitIsDead,'target')~=false then
             ClearContext(); Paint('unknown','Target dead or unavailable'); return

@@ -1,3 +1,12 @@
+## 0.11.0
+
+- Replaced Hunter’s Mark wording with the learned spell’s icon and a bright gold border when missing.
+- Added independent toggles for range, ammo count, low-ammo warnings, pet-health highlight, Mark reminder, and idle fading, alongside existing portrait/angle controls.
+- Mark reminder and angle can now display together without enlarging the bar.
+- Existing settings are preserved; new feature switches default on.
+
+Use `/reload`, then `/fhunter` to choose features. Pet-health highlighting requires the portrait display.
+
 ## 0.10.0
 
 - Added an orange “Hunter's Mark!” reminder for unmarked living enemy targets.

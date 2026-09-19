@@ -10,12 +10,18 @@ end
 NS.Hunter = {
     name="Forever - Hunter's Friend",
     description='Hunter range, ammunition, and target awareness.',
-    defaults={enabled=true,locked=true,x=0,y=-210,scale=1,showTargetTarget=true,showAngle=true}, normalize=Normalize,
+    defaults={enabled=true,locked=true,x=0,y=-210,scale=1,showTargetTarget=true,showAngle=true,showRange=true,showAmmo=true,lowAmmoWarning=true,petMendWarning=true,markWarning=true,fadeOutOfCombat=true}, normalize=Normalize,
     options={
         {key='locked',label='Lock indicator position',kind='toggle'},
         {key='scale',label='Indicator size',kind='number',min=0.5,max=2,step=0.1},
         {key='showTargetTarget',label='Show target-of-target portrait',kind='toggle'},
         {key='showAngle',label='Show facing angle',kind='toggle'},
+        {key='showRange',label='Show range text and weapon icon',kind='toggle'},
+        {key='showAmmo',label='Show ammo count',kind='toggle'},
+        {key='lowAmmoWarning',label='Low-ammo warning (200 or fewer)',kind='toggle'},
+        {key='petMendWarning',label='Pet portrait health warning (30%)',kind='toggle'},
+        {key='markWarning',label="Hunter's Mark reminder icon",kind='toggle'},
+        {key='fadeOutOfCombat',label='Dim outside combat',kind='toggle'},
     },
     create=function(db)
         local host=CreateFrame('Frame','ForeverUtilitiesDistanceFrame',UIParent)

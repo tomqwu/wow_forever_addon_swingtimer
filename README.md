@@ -10,7 +10,7 @@ you need at a glance without a toolbox or module selector.
 - **Range at a glance:** a colored weapon icon and readable range text.
 - **Ammo below the range text:** a small count of your selected ammunition carried in bags, excluding banks. Inventory changes update it even without a target. At 200 or fewer, the count turns red and a one-time low-ammo warning appears. Restocking above 200 rearms the warning. An empty hunter ammo slot shows zero.
 - **Target-of-target portrait:** a small portrait on the right shows who your target is targeting, without extra wording.
-- **Hunter's Mark reminder:** a compact orange warning appears when your living enemy target has no readable Hunter's Mark debuff and you have learned the spell. It clears when marked, including by another hunter. Unavailable aura data stays quiet.
+- **Hunter's Mark reminder:** a highlighted spell icon appears when your living enemy target has no readable Hunter's Mark debuff and you have learned the spell. It clears when marked, including by another hunter. Unavailable aura data stays quiet.
 - **Mend Pet reminder:** the right-hand portrait gets a red border when it shows your own living pet at 30% health or below. The border clears when healed or the target changes. This is a visual reminder, not an automatic cast.
 - **Optional facing angle:** signed degrees relative to your character: positive left, negative right, zero ahead. Hidden when valid position data is unavailable.
 - **Compact and movable:** the bar stays 400 × 56, with adjustable scale and position.
@@ -40,7 +40,10 @@ The folder name is retained for seamless upgrades; the addon appears in WoW as
 for updates. The bar runs only on hunter characters.
 
 Open `/fhunter` for a single settings panel: enable the bar, lock its position,
-change scale, or toggle the portrait and angle. `/futils` remains an alias.
+change scale, or independently toggle range, ammo count, low-ammo warnings, the
+portrait, pet-health highlight, facing angle, Hunter’s Mark icon, and idle fading.
+Pet-health highlighting requires the portrait to be visible. The mark icon and
+angle can appear together. `/futils` remains an alias.
 
 | Command | Action |
 | --- | --- |

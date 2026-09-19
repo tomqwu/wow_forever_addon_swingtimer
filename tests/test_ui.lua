@@ -59,6 +59,12 @@ slash('off');check(not db.enabled and not named.ForeverUtilitiesDistanceFrame.sh
 slash('unlock');check(db.enabled and not db.locked,'unlock enables dragging')
 slash('lock');check(db.locked,'lock command')
 slash('reset');check(db.scale==1 and db.locked,'reset defaults')
+for _,key in ipairs({'showRange','showAmmo','lowAmmoWarning','petMendWarning','markWarning','fadeOutOfCombat','showTargetTarget','showAngle'}) do
+ local control=panel.controls[key]
+ check(control~=nil,'feature has checkbox: '..key)
+ control:SetChecked(false);control.scripts.OnClick(control)
+ check(db[key]==false,'checkbox saves: '..key)
+end
 local saved={modules={distance={enabled=false,x=81,scale=1.2,showAngle=false}},schemaVersion=1}
 NS.Hunter.instance=nil;NS.Hunter.Initialize(saved)
 check(NS.Hunter.db.x==81 and NS.Hunter.db.scale==1.2 and not NS.Hunter.db.showAngle,'toolbox preferences migrated')

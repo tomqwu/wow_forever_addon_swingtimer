@@ -258,12 +258,22 @@ C_Spell={GetSpellInfo=function() return {name="Hunter's Mark",minRange=0,maxRang
 local marked=false
 C_UnitAuras={GetAuraDataByIndex=function(_,i) if marked and i==1 then return {name="Hunter's Mark"} end end}
 f.scripts.OnEvent(f,'SPELLS_CHANGED')
-check(f.labels[4].shown and not f.labels[2].shown,'missing learned mark shows compact warning')
+check(f.markIcon.shown,'missing learned mark shows compact warning')
 marked=true;f.scripts.OnEvent(f,'UNIT_AURA','target')
-check(not f.labels[4].shown,'applying mark immediately clears warning')
+check(not f.markIcon.shown,'applying mark immediately clears warning')
 marked=false;f.scripts.OnEvent(f,'UNIT_AURA','target')
-check(f.labels[4].shown,'expired mark restores reminder')
+check(f.markIcon.shown,'expired mark restores reminder')
 UnitExists=function() return false end;f.Refresh()
-check(not f.labels[4].shown,'target loss clears mark reminder')
+check(not f.markIcon.shown,'target loss clears mark reminder')
 db.enabled=false;f.Refresh();check(not f.events.UNIT_AURA,'disable removes aura listener')
+db.enabled=true;UnitExists=function() return true end
+f.Refresh();check(f.markIcon.shown,'missing mark icon visible')
+db.markWarning=false;f.Refresh();check(not f.markIcon.shown,'mark icon toggle hides reminder')
+db.showAmmo=false;db.lowAmmoWarning=false;f.Refresh()
+check(not f.labels[3].shown and f.labels[3].text=='','ammo display and warning can both be disabled')
+db.showRange=false;f.Refresh();check(not f.label.shown and f.Status()=='Range display disabled','range feature disabled independently')
+db.fadeOutOfCombat=false;f.Refresh();check(f.alpha==1,'fading can be disabled')
+UnitIsUnit=function(unit,other) return unit=='targettarget' and other=='pet' end
+UnitHealth=function() return 10 end;UnitHealthMax=function() return 100 end
+db.petMendWarning=false;f.Refresh();check(not glow.shown and portrait.shown,'pet warning off keeps portrait')
 print('PASS: '..count..' distance checks')
