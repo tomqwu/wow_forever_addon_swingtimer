@@ -1,3 +1,13 @@
+## 0.5.0
+
+- Distance Checker now shows your target’s current target, with YOU when it targets you.
+- Added a live horizontal facing angle: straight ahead, left/right degrees, or behind.
+- Unavailable or restricted position/facing data displays “Angle unavailable”; no attack eligibility is inferred.
+- Both new rows have independent toggles in the Distance Checker settings, and the indicator resizes to fit.
+- Target changes, target loss, and unavailable data clear stale context. Disabled modules retain no update loop or event listeners.
+
+Use `/reload`, then `/futils` to configure the rows. Angle readings depend on client data availability, particularly for enemies. Automated checks use mocked APIs; live gameplay validation is still needed.
+
 ## 0.4.0
 
 - Added the shared utilities toolbox: open `/futils` to select and configure features.

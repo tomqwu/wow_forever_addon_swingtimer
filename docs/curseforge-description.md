@@ -26,6 +26,17 @@ range bracket and color-coded icon. Clear your target and the panel dims to 20%
 opacity. Friendly targets without a usable reading say “Friendly target — Distance
 unavailable.” Numeric readings depend on what the client makes available.
 
+Your target’s current target appears below the distance reading, with **YOU** when
+it is targeting you. The optional facing row shows the horizontal angle from your
+character to the target: `0° (straight ahead)`, degrees **left/right**, or `180°
+(behind)`. It follows character facing, not camera direction. Both rows update
+with the distance reading and can be switched off independently in `/futils`.
+
+Angles require readable player/target positions on the same map and readable
+character facing. If the client does not supply these, the row says **Angle
+unavailable**. Enemy positions may be unavailable. This is a direction indicator;
+it does not certify an attack’s facing requirement or line of sight.
+
 ## Built for quick reads
 
 - **Readable during combat:** large outlined text, a dark background, and a bright colored icon border.

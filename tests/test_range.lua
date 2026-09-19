@@ -3,6 +3,7 @@ local secret={}
 issecretvalue=function(v) return rawequal(v,secret) end
 assert(loadfile('addons/ForeverUtilities/Core.lua'))('ForeverUtilities',NS)
 assert(loadfile('addons/ForeverUtilities/Range.lua'))('ForeverUtilities',NS)
+assert(loadfile('addons/ForeverUtilities/TargetContext.lua'))('ForeverUtilities',NS)
 local count=0
 local function check(ok,msg) assert(ok,msg);count=count+1 end
 local function measure(probes,m,r,state,text)
@@ -58,7 +59,7 @@ function methods:CreateTexture()
  self.textures=rawget(self,"textures") or {};table.insert(self.textures,texture);return texture
 end
 function methods:SetColorTexture(r,g,b,a) self.color={r,g,b,a} end
-function methods:CreateFontString() local f=setmetatable({}, {__index=methods});self.label=f;return f end
+function methods:CreateFontString() local f=setmetatable({}, {__index=methods});self.labels=rawget(self,'labels') or {};table.insert(self.labels,f);self.label=self.labels[1];return f end
 function methods:SetText(t) self.text=t end
 function methods:SetShown(v) self.shown=v end
 function methods:SetAlpha(v) self.alpha=v end
@@ -159,4 +160,29 @@ UnitDistanceSquared=nil
 class='HUNTER';C_Spell=nil;C_SpellBook=nil
 f=NS.Range.Create({},db)
 check(f.label.text:find('Range unavailable',1,true),'missing APIs degrade safely')
+-- Context shares the module lifecycle and responds to target changes.
+local targetName='Tank'
+UnitName=function() return targetName end
+UnitIsUnit=function() return false end
+UnitExists=function(unit) return target end
+GetPlayerFacing=function() return 0 end
+UnitPosition=function(unit) if unit=='player' then return 0,0,0,1 end return 0,10,0,1 end
+target=true;dead=false;f.Refresh()
+check(f.labels[2].text=='Target of target: Tank' and f.labels[3].text=='Angle: 90° left','context shown alongside range')
+targetName='Healer';f.scripts.OnEvent(f,'UNIT_TARGET','target')
+check(f.labels[2].text=='Target of target: Healer','targettarget change updates immediately')
+targetName='Renamed';f.scripts.OnEvent(f,'UNIT_NAME_UPDATE','targettarget')
+check(f.labels[2].text=='Target of target: Renamed','targettarget name updates')
+UnitPosition=nil;f.scripts.OnUpdate(f,0.15)
+check(f.labels[3].text=='Angle unavailable','restricted positions clear old angle')
+target=false;f.scripts.OnEvent(f,'PLAYER_TARGET_CHANGED')
+check(f.labels[2].text=='Target of target: —' and f.labels[3].text=='Angle: —','target loss clears context')
+local queries=0
+UnitName=function() queries=queries+1;return 'Tank' end
+GetPlayerFacing=function() queries=queries+1;return 0 end
+db.showTargetTarget=false;db.showAngle=false;target=true;f.Refresh()
+f.scripts.OnUpdate(f,0.15)
+check(queries==0,'disabled context rows do not query APIs')
+db.enabled=false;f.Refresh()
+check(not f.events.UNIT_TARGET and not f.events.UNIT_NAME_UPDATE and not f.scripts.OnUpdate,'disable removes context events and polling')
 print('PASS: '..count..' distance checks')

@@ -73,7 +73,7 @@ function Range.Measure(probes, melee, ranged, shot)
 end
 function Range.Create(host, db)
     local frame = CreateFrame('Frame', 'ForeverUtilitiesIndicator', host)
-    frame:SetSize(400,56)
+    frame:SetSize(400,NS.TargetContext.Height(db))
     frame:SetPoint('TOPLEFT',host,'TOPLEFT',0,0)
     -- Keep the readout legible against bright terrain and busy combat effects.
     local background = frame:CreateTexture(nil,'BACKGROUND')
@@ -84,7 +84,7 @@ function Range.Create(host, db)
     accent:SetPoint('BOTTOMLEFT',frame,'BOTTOMLEFT',0,0)
     accent:SetWidth(4)
     local iconBorder = frame:CreateTexture(nil,'ARTWORK',nil,0)
-    iconBorder:SetSize(44,44); iconBorder:SetPoint('LEFT',frame,'LEFT',10,0)
+    iconBorder:SetSize(44,44); iconBorder:SetPoint('TOPLEFT',frame,'TOPLEFT',10,-10)
     local icon = frame:CreateTexture(nil,'ARTWORK',nil,1)
     icon:SetSize(38,38); icon:SetPoint('CENTER',iconBorder,'CENTER',0,0)
     icon:SetTexture('Interface\\Icons\\Ability_Marksmanship')
@@ -92,10 +92,32 @@ function Range.Create(host, db)
     label:SetFont(STANDARD_TEXT_FONT or 'Fonts\\FRIZQT__.TTF',18,'OUTLINE')
     label:SetShadowColor(0,0,0,1)
     label:SetShadowOffset(1,-1)
-    label:SetPoint('LEFT',iconBorder,'RIGHT',12,0)
-    label:SetPoint('RIGHT',frame,'RIGHT',-12,0)
+    label:SetPoint('TOPLEFT',frame,'TOPLEFT',66,-10)
+    label:SetPoint('TOPRIGHT',frame,'TOPRIGHT',-12,-10)
+    label:SetHeight(36)
     label:SetJustifyH('LEFT')
     label:SetWordWrap(false)
+    local targetLabel=frame:CreateFontString(nil,'OVERLAY','GameFontHighlight')
+    local angleLabel=frame:CreateFontString(nil,'OVERLAY','GameFontHighlight')
+    for _,text in ipairs({targetLabel,angleLabel}) do
+        text:SetFont(STANDARD_TEXT_FONT or 'Fonts\\FRIZQT__.TTF',14,'OUTLINE')
+        text:SetJustifyH('LEFT');text:SetWordWrap(false);text:SetWidth(322)
+        text:SetTextColor(0.9,0.93,1)
+    end
+    local function ContextLayout()
+        frame:SetHeight(NS.TargetContext.Height(db))
+        targetLabel:SetShown(db.showTargetTarget~=false)
+        angleLabel:SetShown(db.showAngle~=false)
+        targetLabel:ClearAllPoints();targetLabel:SetPoint('TOPLEFT',frame,'TOPLEFT',66,-55)
+        angleLabel:ClearAllPoints();angleLabel:SetPoint('TOPLEFT',frame,'TOPLEFT',66,db.showTargetTarget~=false and -77 or -55)
+    end
+    local function ClearContext()
+        targetLabel:SetText('Target of target: —');angleLabel:SetText('Angle: —')
+    end
+    local function UpdateContext()
+        if db.showTargetTarget~=false then targetLabel:SetText(NS.TargetContext.TargetTarget()) end
+        if db.showAngle~=false then angleLabel:SetText(NS.TargetContext.AngleText()) end
+    end
     local spells, shot, elapsed = {}, nil, 0
     local function Discover()
         spells, shot = {}, nil
@@ -145,6 +167,7 @@ function Range.Create(host, db)
     end
     local lastStatus='Not checked'
     local function Update()
+        UpdateContext()
         local yards=Range.ReadDistance('target')
         if Call(UnitCanAttack,'player','target')~=true then
             local state,text=Range.WithDistance('unknown','Range unavailable',yards)
@@ -175,10 +198,11 @@ function Range.Create(host, db)
     end
     local active=false
     local rangeEvents={'PLAYER_TARGET_CHANGED','SPELLS_CHANGED','PLAYER_ENTERING_WORLD',
-        'PLAYER_LEAVING_WORLD','PLAYER_DEAD','PLAYER_EQUIPMENT_CHANGED','UNIT_FLAGS'}
+        'PLAYER_LEAVING_WORLD','PLAYER_DEAD','PLAYER_EQUIPMENT_CHANGED','UNIT_FLAGS','UNIT_TARGET','UNIT_NAME_UPDATE'}
     local function Refresh()
         frame:SetScript('OnUpdate',nil)
         frame:SetShown(db.enabled)
+        ContextLayout()
         if not db.enabled then
             if active then for _,event in ipairs(rangeEvents) do frame:UnregisterEvent(event) end end
             active=false;lastStatus='Distance checker disabled'
@@ -190,9 +214,9 @@ function Range.Create(host, db)
         end
         local hasTarget=Call(UnitExists,'target')==true
         frame:SetAlpha((hasTarget or db.locked==false) and 1 or 0.2)
-        if not hasTarget then Paint('unknown','No target'); return end
+        if not hasTarget then ClearContext(); Paint('unknown','No target'); return end
         if Call(UnitIsDead,'target')~=false then
-            Paint('unknown','Target dead or unavailable'); return
+            ClearContext(); Paint('unknown','Target dead or unavailable'); return
         end
         Update(); elapsed=0
         frame:SetScript('OnUpdate',function(_,delta)
@@ -205,9 +229,11 @@ function Range.Create(host, db)
     end
     frame:SetScript('OnEvent',function(_,event,unit)
         if not db.enabled then return end
+        if event=='UNIT_TARGET' and (not Core.IsReadable(unit) or unit~='target') then return end
+        if event=='UNIT_NAME_UPDATE' and (not Core.IsReadable(unit) or (unit~='target' and unit~='targettarget')) then return end
         if event=='UNIT_FLAGS' and (not Core.IsReadable(unit) or unit~='target') then return end
         if event=='PLAYER_LEAVING_WORLD' or event=='PLAYER_DEAD' then
-            frame:SetScript('OnUpdate',nil); Paint('unknown','Range inactive'); return
+            frame:SetScript('OnUpdate',nil); ClearContext(); Paint('unknown','Range inactive'); return
         end
         if event=='SPELLS_CHANGED' or event=='PLAYER_ENTERING_WORLD' or event=='PLAYER_EQUIPMENT_CHANGED' then Discover() end
         Refresh()

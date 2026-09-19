@@ -45,7 +45,7 @@ local function Select(id)
     if not panel.sections[id] then
         local definition=Modules.definitions[id]
         local section=CreateFrame('Frame',nil,panel)
-        section:SetPoint('TOPLEFT',panel,'TOPLEFT',235,-62);section:SetSize(340,310)
+        section:SetPoint('TOPLEFT',panel,'TOPLEFT',235,-62);section:SetSize(340,410)
         section.controls={};panel.sections[id]=section
         Text(section,definition.name,0,0,'GameFontNormalLarge')
         local description=Text(section,definition.description,0,-32)
@@ -79,7 +79,7 @@ end
 local function OpenPanel()
     if not panel then
         panel=CreateFrame('Frame','ForeverUtilitiesToolbox',UIParent)
-        panel:SetSize(600,400);panel:SetPoint('CENTER');panel:SetFrameStrata('DIALOG')
+        panel:SetSize(600,500);panel:SetPoint('CENTER');panel:SetFrameStrata('DIALOG')
         panel:SetClampedToScreen(true);panel:EnableMouse(true)
         local bg=panel:CreateTexture(nil,'BACKGROUND');bg:SetAllPoints();bg:SetColorTexture(0.025,0.03,0.045,0.98)
         Text(panel,'Forever Utilities',20,-18,'GameFontNormalLarge')
@@ -87,19 +87,19 @@ local function OpenPanel()
         Button(panel,'Close',510,-14,70,function() panel:Hide() end)
         panel.rows={};panel.sections={}
         local scroll=CreateFrame('ScrollFrame',nil,panel)
-        scroll:SetPoint('TOPLEFT',panel,'TOPLEFT',15,-70);scroll:SetSize(205,270)
-        local list=CreateFrame('Frame',nil,scroll);list:SetSize(205,math.max(270,#Modules.list*36))
+        scroll:SetPoint('TOPLEFT',panel,'TOPLEFT',15,-70);scroll:SetSize(205,370)
+        local list=CreateFrame('Frame',nil,scroll);list:SetSize(205,math.max(370,#Modules.list*36))
         scroll:SetScrollChild(list);scroll:EnableMouseWheel(true)
         local offset=0
         scroll:SetScript('OnMouseWheel',function(self,delta)
-            offset=math.max(0,math.min(math.max(0,#Modules.list*36-270),offset-delta*36))
+            offset=math.max(0,math.min(math.max(0,#Modules.list*36-370),offset-delta*36))
             self:SetVerticalScroll(offset)
         end)
         for i,definition in ipairs(Modules.list) do
             local id=definition.id
             panel.rows[id]=Button(list,definition.name,0,-(i-1)*36,200,function() Select(id) end)
         end
-        Text(panel,'v0.4.0  |  Settings are saved per utility.',20,-372,'GameFontHighlightSmall')
+        Text(panel,'v0.5.0  |  Settings are saved per utility.',20,-472,'GameFontHighlightSmall')
         if UISpecialFrames then table.insert(UISpecialFrames,'ForeverUtilitiesToolbox') end
     end
     panel:Show();Select(Modules.db.selectedModule)
@@ -128,7 +128,7 @@ SlashCmdList.FOREVERUTILITIES=function(message)
         db.scale=value;Modules.Apply('distance')
     elseif command=='reset' then Modules.Reset('distance')
     elseif command=='status' then
-        Say('v0.4.0 | Utilities: '..#Modules.list)
+        Say('v0.5.0 | Utilities: '..#Modules.list)
         for _,definition in ipairs(Modules.list) do
             Say(definition.name..': '..(Modules.Settings(definition.id).enabled and 'enabled' or 'disabled'))
             local instance=Modules.instances[definition.id]

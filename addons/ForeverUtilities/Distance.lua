@@ -9,21 +9,24 @@ local function Normalize(db)
 end
 NS.Modules.Register({
     id='distance', name='Distance checker',
-    description='Live yards when available, range brackets and colored warnings. Dims when no target is selected.',
-    defaults={enabled=true,locked=true,x=0,y=-210,scale=1}, normalize=Normalize,
+    description='Distance, target of target, and facing angle when available. Dims with no target.',
+    defaults={enabled=true,locked=true,x=0,y=-210,scale=1,showTargetTarget=true,showAngle=true}, normalize=Normalize,
     options={
         {key='locked',label='Lock indicator position',kind='toggle'},
         {key='scale',label='Indicator size',kind='number',min=0.5,max=2,step=0.1},
+        {key='showTargetTarget',label='Show target of target',kind='toggle'},
+        {key='showAngle',label='Show facing angle',kind='toggle'},
     },
     create=function(db)
         local host=CreateFrame('Frame','ForeverUtilitiesDistanceFrame',UIParent)
-        host:SetSize(400,56);host:SetFrameStrata('MEDIUM')
+        host:SetSize(400,NS.TargetContext.Height(db));host:SetFrameStrata('MEDIUM')
         host:SetMovable(true);host:SetClampedToScreen(true);host:RegisterForDrag('LeftButton')
         host.hint=host:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall')
         host.hint:SetPoint('BOTTOM',host,'TOP',0,4)
         local indicator=NS.Range.Create(host,db)
         local function Apply()
             host:SetShown(db.enabled)
+            host:SetSize(400,NS.TargetContext.Height(db))
             host:SetScale(db.scale);host:ClearAllPoints()
             host:SetPoint('CENTER',UIParent,'CENTER',db.x,db.y)
             host:EnableMouse(db.enabled and not db.locked)
