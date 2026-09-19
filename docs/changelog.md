@@ -1,3 +1,11 @@
+## 0.8.1
+
+- Friendly targets without a distance reading show only “Friendly target”.
+- Kept the main range text on one line so it cannot crowd the ammo line.
+- Reclaimed the right-hand text space whenever the target-of-target portrait is absent.
+
+Use `/reload` to apply the layout fix.
+
 ## 0.8.0
 
 - Ammo turns red at 200 or fewer arrows/bullets.

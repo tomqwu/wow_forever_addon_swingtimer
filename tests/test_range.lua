@@ -152,7 +152,7 @@ check(f.label.text=='Distance | 12.0 yd','friendly target numeric distance suppo
 UnitIsFriend=function() return true end
 UnitDistanceSquared=function() return 0,false end
 f.Refresh()
-check(f.label.text=='Friendly target\nDistance unavailable','friendly unavailable message is explicit')
+check(f.label.text=='Friendly target','friendly target omits unavailable wording')
 check(f.textures[2].color[1]==0.8,'friendly unavailable remains neutral gray')
 UnitIsFriend=function() return secret end
 f.Refresh()
